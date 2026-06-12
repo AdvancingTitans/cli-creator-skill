@@ -1,0 +1,51 @@
+[project]
+name = "cli-creator-skill"
+version = "0.1.0"
+description = "Installable cli-creator agent skill for designing and auditing Python CLI tools."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+authors = [
+  { name = "yjw" }
+]
+keywords = ["cli", "typer", "rich", "questionary", "agent-skill", "codex", "llm"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development",
+  "Topic :: Utilities",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/AdvancingTitans/cli-creator-skill"
+Repository = "https://github.com/AdvancingTitans/cli-creator-skill"
+Issues = "https://github.com/AdvancingTitans/cli-creator-skill/issues"
+
+[project.scripts]
+cli-creator-skill = "cli_creator_skill.installer:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cli_creator_skill"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"skills/cli-creator" = "cli_creator_skill/skills/cli-creator"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/cli_creator_skill",
+  "skills/cli-creator",
+  "README.md",
+  "LICENSE",
+  "NOTICE.md",
+]
