@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- Remove public release setup details from README.
+
 ## 0.1.0
 
 - Initial release of the `cli-creator` skill.

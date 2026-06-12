@@ -1,6 +1,6 @@
 [project]
 name = "cli-creator-skill"
-version = "0.1.0"
+version = "0.1.1"
 description = "Installable cli-creator agent skill for designing and auditing Python CLI tools."
 readme = "README.md"
 requires-python = ">=3.9"
