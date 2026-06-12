@@ -46,6 +46,7 @@ include = [
   "src/cli_creator_skill",
   "skills/cli-creator",
   "README.md",
+  "CHANGELOG.md",
   "LICENSE",
   "NOTICE.md",
 ]

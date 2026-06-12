@@ -31,6 +31,27 @@ Install to a custom directory:
 cli-creator-skill install --target ~/.agents/skills
 ```
 
+## PyPI Trusted Publisher
+
+This repository is ready for tag-driven PyPI publishing through GitHub Actions.
+
+Configure a pending publisher on PyPI with these exact values:
+
+```text
+PyPI project name: cli-creator-skill
+Owner: AdvancingTitans
+Repository name: cli-creator-skill
+Workflow name: publish.yml
+Environment name: pypi
+```
+
+After the pending publisher is configured, publishing is:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
 ## What This Skill Helps With
 
 - Design a new Python CLI from scratch.
