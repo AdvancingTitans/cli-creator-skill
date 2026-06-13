@@ -1,319 +1,360 @@
 # CLI Pitfalls And Solutions
 
-Use this reference when creating or auditing a Python CLI, especially an interactive Typer + Rich + questionary application with data fetching, LLM integration, and local persistence.
+Use this reference when creating or auditing Python CLIs. It covers command-first tools, configuration-driven tools, interactive assistants, data/LLM CLIs, and performance-oriented utilities.
 
-## 1. Menu-First Design
+## 1. Starting From Framework Instead Of User Job
 
-Problem: The CLI opens with a rigid menu instead of helping the user express intent.
+Problem: The tool is organized around internal modes instead of user goals.
 
 Typical signs:
 
-- The first prompt asks users to choose between internal implementation modes.
-- Users who do not know the domain cannot proceed confidently.
-- Every branch produces similar results, so choices feel fake.
+- Commands are named after implementation details.
+- The first screen asks users to choose between abstract modes.
+- README explains architecture before showing value.
 
 Solution:
 
-- Start with a plain-language question about the user's goal.
-- Offer 2-4 examples, but always allow free text.
-- Route free text through intent detection, not a generic default branch.
+- Name commands after user verbs: `check`, `format`, `fetch`, `run`, `export`, `sync`.
+- Put implementation modes behind flags or config.
+- Start README with a 30-second demo.
 
 Anti-pattern:
 
 ```text
-? Choose mode: [Domain mode, Autonomous mode, Config mode]
+my-cli agent-mode --pipeline backend-a
 ```
 
 Better:
 
 ```text
-? 你最近想研究什么？可以说一个领域，也可以说“我没思路，帮我找机会”。
+my-cli fetch "AI safety" --since 30d --json
 ```
 
-## 2. Questionnaire-Like Profile Collection
+## 2. Over-Interactive Design For Scriptable Work
 
-Problem: The CLI asks a stack of formal questions and makes the user feel they are filling out a grant application.
+Problem: A command-first task is forced through prompts.
 
 Typical signs:
 
-- Five or more questions are shown at once.
-- Questions use abstract labels such as "风险偏好" or "输出形式偏好".
-- The CLI repeats similar questions after the user already answered.
+- CI or cron cannot run the tool.
+- questionary crashes in non-TTY contexts.
+- Required inputs have no flags.
 
 Solution:
 
-- Ask one natural question at a time.
-- Maintain a profile state with field confidence.
-- Infer missing fields when confidence is good enough.
-- Allow "没有", "不知道", "跳过", and continue with defaults.
+- Provide flags for every prompt.
+- Detect non-TTY and fail with missing arguments or use documented defaults.
+- Keep `--json`, `--yes`, and `--no-input` for automation.
+
+## 3. Under-Interactive Setup For Complex Config
+
+Problem: A config-heavy tool expects users to manually edit files before first use.
+
+Typical signs:
+
+- Users do not know where config lives.
+- Model/API setup fails silently.
+- README has long setup prose but no command.
+
+Solution:
+
+- Add `setup` for guided configuration.
+- Add `config show`, `config path`, `config reset`.
+- Add `doctor` to verify credentials, paths, optional CLIs, and network.
+
+## 4. Undefined Config Precedence
+
+Problem: Flags, env vars, project config, and global config conflict.
+
+Typical signs:
+
+- Same command behaves differently across directories.
+- Users cannot tell which config value was used.
+- Tests patch environment variables unpredictably.
+
+Solution:
+
+- Document precedence: flags > env > project config > user config > defaults.
+- Show effective config with masked secrets.
+- Include config source in debug output.
+
+Ruff-style lesson: support both config files and CLI overrides; make defaults useful but explicit.
+
+## 5. Slow Help And Startup
+
+Problem: Importing the CLI loads large libraries, probes network, or opens databases.
+
+Typical signs:
+
+- `my-cli --help` feels slow.
+- Running help fails without credentials.
+- Import side effects create files.
+
+Solution:
+
+- Lazy-load heavy modules inside command bodies.
+- Never perform network or auth checks during import/help.
+- Keep console/settings creation lightweight.
+
+uv-style lesson: startup speed is part of UX.
+
+## 6. Command Surface Sprawl
+
+Problem: The CLI grows many overlapping commands.
+
+Typical signs:
+
+- `run`, `generate`, `create`, and `build` do similar things.
+- Users rely on tribal knowledge.
+- Help output becomes a wall of commands.
+
+Solution:
+
+- Group commands by resource or action.
+- Keep aliases rare and documented.
+- Deprecate old commands with clear warnings.
+- Add command examples in help text.
+
+## 7. Pretty Output Without Machine Output
+
+Problem: Rich tables look good but cannot be consumed by scripts.
+
+Typical signs:
+
+- Users scrape terminal text.
+- Color codes leak into pipes.
+- CI logs are noisy.
+
+Solution:
+
+- Add `--json` or `--format`.
+- Disable Rich markup for machine output.
+- Respect `NO_COLOR`, `--no-color`, `--quiet`.
+
+HTTPie-style lesson: human output can be beautiful, but syntax and output must remain predictable.
+
+## 8. Weak Error Messages
+
+Problem: Errors say "failed" without a next action.
+
+Typical signs:
+
+- Raw tracebacks in normal mode.
+- No distinction between config, network, auth, and data failures.
+- Users retry blindly.
+
+Solution:
+
+- Define domain errors.
+- Include likely cause and repair command.
+- Show traceback only with `--debug`.
 
 Better:
 
 ```text
-先聊聊你的背景吧，你之前主要在哪些方向做过研究、写作或项目？
+配置无效：model 缺失。
+建议：运行 my-cli setup model 或 my-cli config set model <name>。
 ```
 
-## 3. No Persistent Profile Memory
+## 9. Bad Exit Codes
 
-Problem: The CLI asks the same background questions every run.
+Problem: The CLI always exits 0 or 1.
 
 Typical signs:
 
-- Returning users must re-enter goals and constraints.
-- There is no command to inspect or clear memory.
-- Profile data is mixed with cache data.
+- CI cannot distinguish "issues found" from "tool crashed".
+- Shell scripts need text matching.
 
 Solution:
 
-- Store profile memory in SQLite or a dedicated config file.
-- Provide `profile show`, `profile edit`, and `profile clear`.
-- Store timestamps and confidence per field.
-- Ask only for missing or stale information.
+- Define exit code contracts.
+- Use separate codes for usage/config errors, found violations, auth, network, and internal bugs.
+- Document them.
 
-## 4. Hidden Model Configuration
+## 10. Cache Semantics Are Invisible
 
-Problem: The CLI asks only for an API key, but the provider also requires provider name, base URL, and model name.
+Problem: Users cannot tell whether output is fresh.
 
 Typical signs:
 
-- OpenAI-compatible providers fail silently.
-- Users paste a base URL such as an Ark endpoint but the CLI still calls the OpenAI default.
-- Empty recommendations appear when the real cause is model failure.
+- `refresh` returns the same items.
+- Failed requests are cached as empty results.
+- Cache cannot be inspected or cleared.
 
 Solution:
 
-- Treat provider, base URL, model, API key, timeout, and structured-output mode as explicit settings.
-- Provide presets, then verify with a small call.
-- Display the active provider summary before expensive workflows.
+- Store cache status: `ok`, `empty-valid`, `partial`, `error`.
+- Include source, query, time window, schema version, and cache age in metadata.
+- Provide `cache stats`, `cache clear`, and `--refresh`.
 
-Better commands:
+uv-style lesson: cache is a product feature and should be deterministic, efficient, and inspectable.
 
-```bash
-my-cli setup model
-my-cli config model show
-my-cli config model verify
-my-cli config model presets
-```
+## 11. Data Claims Without Evidence
 
-## 5. Provider Compatibility Assumptions
-
-Problem: The CLI assumes all OpenAI-compatible endpoints support the same schema, tool calls, streaming, and JSON mode.
+Problem: A research/data CLI reports conclusions without source objects.
 
 Typical signs:
 
-- Instructor fails on one provider but works on another.
-- `base_url` path is wrong, for example using a coding endpoint for chat completions.
-- Model names require provider-specific IDs.
+- No URL, timestamp, metric, or query is retained.
+- LLM synthesis is mixed with facts.
 
 Solution:
 
-- Implement provider presets with known base URL shape and model examples.
-- Run a capability probe: plain chat, JSON mode, instructor/tool mode.
-- Store capability flags and choose the safest response mode.
-- Provide a manual override.
+- Preserve evidence objects.
+- Separate facts, inference, and recommendation.
+- Save evidence beside generated reports.
 
-## 6. Caching Failed Or Empty Results
+## 12. LLM Provider Configuration Collapsed Into One Field
 
-Problem: A failed fetch or bad LLM response is cached as a valid empty result.
+Problem: The CLI asks only for an API key.
 
 Typical signs:
 
-- Refresh still returns no results.
-- The CLI says "no reliable topics" even after config is fixed.
-- Cache has no status field.
+- OpenAI-compatible providers fail.
+- Wrong base URL or model name returns empty content.
+- Instructor/tool mode works for one provider but not another.
 
 Solution:
 
-- Store cache entries with status: `ok`, `empty-valid`, `error`, `partial`.
-- Do not reuse `error` cache entries unless explicitly requested.
-- Include cache age and source in debug output.
-- Provide `cache clear` and `run --refresh`.
+- Store provider, base URL, model, API key reference, timeout, and response mode separately.
+- Verify with the actual configured model.
+- Probe capabilities: plain chat, JSON mode, tool/instructor mode.
 
-## 7. Refresh Shows The Same Items
+## 13. Monolithic CLI Module
 
-Problem: Refresh reuses the same query, same cache key, and same ranking without exclusions.
-
-Typical signs:
-
-- Users see identical suggestions across refreshes.
-- The code only bypasses cache but does not alter the search strategy.
-
-Solution:
-
-- Track shown item IDs, titles, URLs, and embeddings or normalized titles.
-- Add exclusions to ranking.
-- Vary query expansions and time windows.
-- Display "new since last batch" and "hidden duplicates" counts.
-
-## 8. Evidence-Free Recommendations
-
-Problem: The CLI generates attractive topic names without verifiable sources.
+Problem: `cli.py` contains routing, prompts, SQL, HTTP, rendering, and business rules.
 
 Typical signs:
 
-- Tables have no source URLs.
-- "Hot" means the model thinks it is hot.
-- Social chatter is treated as equal to papers, policy, market data, or code activity.
-
-Solution:
-
-- Require evidence objects with source, URL, date, metric, and snippet.
-- Rank topics using transparent dimensions.
-- Mark unsupported claims as hypotheses.
-- Refuse or ask to broaden search when evidence is insufficient.
-
-## 9. Monolithic CLI Modules
-
-Problem: `cli.py` contains command definitions, prompts, HTTP calls, SQL, prompt templates, and rendering.
-
-Typical signs:
-
-- Adding a new command risks breaking the main flow.
-- Tests must mock too much.
-- LLM prompts are hard to reuse.
+- Unit tests require huge mocks.
+- Adding one command breaks another.
+- Prompt copy is hard to review.
 
 Solution:
 
 - Keep `cli.py` thin.
-- Move orchestration to `app.py` or `flows/`.
-- Move integrations to `services/` or `integrations/`.
-- Move terminal output to `renderers/terminal.py`.
+- Move workflows to `app/`.
+- Move external calls to `services/`.
+- Move output to `renderers/`.
+- Move config to `settings.py` or `config.py`.
 
-## 10. Poor Non-TTY Behavior
+## 14. No Project Root Or File Discovery Policy
 
-Problem: The CLI only works interactively and crashes in automation.
-
-Typical signs:
-
-- questionary prompts appear in cron, CI, or piped usage.
-- No flags exist for required inputs.
-- The command cannot run with `--yes`, `--json`, or config values.
-
-Solution:
-
-- Detect `sys.stdin.isatty()`.
-- Provide flags for every required prompt.
-- In non-TTY mode, fail with a clear missing-argument message or use defaults.
-- Keep JSON output free of Rich styling.
-
-## 11. Friendly UI But Weak Errors
-
-Problem: The CLI looks polished but gives vague failure messages.
+Problem: Configuration and file targets are discovered inconsistently.
 
 Typical signs:
 
-- "执行失败" without cause.
-- Stack traces shown to normal users.
-- No suggested command fixes the issue.
+- Running from a subdirectory changes behavior.
+- Hidden directories are scanned.
+- Large repos become slow.
 
 Solution:
 
-- Define domain errors with human messages and repair hints.
-- Add `--debug` for tracebacks.
-- Include next commands, for example `my-cli config model verify`.
+- Define root discovery.
+- Respect `.gitignore` or documented include/exclude rules when relevant.
+- Provide `--config`, `--isolated`, and `--exclude`.
 
-Error format:
+Ruff-style lesson: file discovery and defaults are core CLI behavior.
 
-```text
-模型验证失败：Ark 返回 404，通常是 base_url 路径或模型名不匹配。
-建议：运行 my-cli setup model --provider ark，然后选择一个可用模型。
-```
+## 15. Packaging Entry Point Drift
 
-## 12. Packaging Entry Point Drift
-
-Problem: README says `hotspot-research`, package installs `hotspot-research-cli`, or stale scripts remain on PATH.
+Problem: README says one command, installed package provides another.
 
 Typical signs:
 
-- `command not found` after successful install.
-- Help text shows old command names.
-- User must manually create symlinks.
+- `pip install` succeeds, command not found.
+- Users must manually create symlinks.
 
 Solution:
 
-- Define the final command in `[project.scripts]`.
-- Add a `doctor --fix-entrypoint` command only for legacy installs.
-- Test install into a clean venv.
-- Keep README examples generated or verified from real commands.
+- Test `[project.scripts]`.
+- Verify clean venv install.
+- Keep README examples synchronized with real commands.
 
-## 13. Secrets In Logs And Config
+## 16. Secrets In Logs, Docs, Or Git History
 
-Problem: API keys, tokens, or bot credentials appear in logs, snapshots, or Git history.
+Problem: Tokens or release setup details leak into public files.
 
 Typical signs:
 
-- Config show prints full API keys.
-- Debug logs include headers.
-- `.env` is committed.
+- `config show` prints full keys.
+- README contains operational credentials or sensitive setup values.
+- Remote URL contains a token.
 
 Solution:
 
-- Mask secrets by default.
-- Store keys in OS keychain when available, or protected config files.
-- Keep `.env.example`, never `.env`.
-- Add pre-commit or CI secret scanning when feasible.
+- Mask secrets.
+- Keep release credentials and private operational details out of public docs.
+- Scan before publishing.
+- Prefer trusted publishing or secret managers without documenting sensitive internals publicly.
 
-## 14. Slow Startup
+## 17. Tests Skip The Real CLI
 
-Problem: Heavy imports, network probes, or model discovery happen before help output.
+Problem: Tests cover functions but not the installed command.
 
 Typical signs:
 
-- `my-cli --help` is slow.
-- Importing the package triggers HTTP calls.
-- Rich progress starts before command validation.
+- Parser regressions ship.
+- Entry points break.
+- JSON mode is invalid.
 
 Solution:
 
-- Keep top-level imports lightweight.
-- Lazy-load LLM, browser, data, and rendering-heavy modules inside commands.
-- Never probe network during import.
+- Test `--help`.
+- Test each top-level command help.
+- Test clean install in CI when feasible.
+- Test JSON output with `json.loads`.
+- Test representative success and failure paths.
 
-## 15. Missing Smoke Tests
+## 18. No Maintenance Story
 
-Problem: Unit tests pass but the installed CLI is broken.
+Problem: The CLI works today but cannot evolve safely.
 
 Typical signs:
 
-- No test runs `python -m package --help`.
-- No test checks `console_scripts`.
-- No test covers first run with empty config.
+- No changelog.
+- No deprecation policy.
+- Config schema changes break users.
+- Plugins have no version contract.
 
 Solution:
 
-- Test `--help` for all top-level commands.
-- Test config load with temp directories.
-- Test one dry-run or offline smoke flow.
-- Test package build metadata.
+- Add `CHANGELOG.md`.
+- Version config schemas.
+- Warn before removing commands/options.
+- Keep migration helpers for user state.
 
-## 16. Integration Hard-Coding
+## 19. Diagnostics Are Human-Only Or Mutate State
 
-Problem: The CLI directly calls one delivery channel or one model provider throughout the app.
+Problem: `doctor` prints friendly prose but cannot be parsed by scripts, or it changes user files while diagnosing.
 
 Typical signs:
 
-- Feishu logic is embedded in report generation.
-- Adding DingTalk requires editing core flow code.
-- Provider-specific exceptions leak into UI.
+- Support cannot ask for one safe JSON diagnostic output.
+- `doctor` creates config/cache/shims unless users opt in.
+- Health checks hide cache availability or config source.
 
 Solution:
 
-- Define integration interfaces.
-- Keep provider adapters small.
-- Return normalized result objects.
-- Let the main app depend on abstractions, not concrete CLIs.
+- Add `doctor --json`.
+- Keep default doctor read-only.
+- Put repair behind explicit flags such as `--fix-entrypoint`.
+- Include command path, Python executable, config path, model/provider, cache path, cache status, optional CLI status, and auth status.
+- Mask all secrets.
 
-## 17. No Diagnostics Command
+## 20. Release Copy Drift
 
-Problem: Users cannot tell whether the failure is config, network, dependency, auth, or code.
+Problem: A local skill/template and its published package copy diverge.
 
 Typical signs:
 
-- Support requests include screenshots instead of diagnostic output.
-- The README has long manual troubleshooting sections.
+- The package contains stale docs or missing reference files.
+- Copying a directory into an existing directory creates nested duplicate folders.
+- GitHub and local behavior differ.
 
 Solution:
 
-- Implement `doctor`.
-- Check Python version, package version, command path, config path, model provider, cache DB, optional CLIs, auth state, network reachability, and write permissions.
-- Provide `doctor --json` for bug reports.
+- Treat the published copy as a build artifact or sync target.
+- Use explicit file sync, clean destination directories, or package-data tests.
+- Run `diff -qr` between source and release copy before publishing.
+- Inspect wheel/sdist contents for required assets.

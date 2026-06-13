@@ -1,267 +1,214 @@
 # CLI Creation Playbook
 
-Use this playbook to build a modern Python CLI that is friendly for first-time users, scriptable for power users, and maintainable for future contributors.
+Use this playbook to build a modern Python CLI from zero.
 
-## Phase 0: Product Framing
+## Phase 0: Requirements And Type Selection
 
-Define:
+Classify the CLI:
 
-- Target user: who uses this CLI and in what context?
-- Job to be done: what useful artifact or decision should the CLI produce?
-- First-run success: what can a user achieve within five minutes?
-- Repeat-run success: what should the CLI remember or automate?
-- Failure model: what can fail, and how should the CLI recover?
+- Command-first: fast commands, stable flags, JSON output.
+- Configuration-driven: config discovery, precedence, reproducibility.
+- Interactive/hybrid: first-run wizard, prompts, state machine.
+- Data/LLM: evidence, cache, provider verification, structured output.
+- Performance-heavy: startup, concurrency, streaming, cache.
+- Plugin-based: extension API and adapter contracts.
 
-Write a one-paragraph product promise before writing code.
+Write:
 
-## Phase 1: Command Surface
+- one-sentence product promise
+- main command examples
+- non-goals for v1
+- expected output forms
+- failure/recovery model
 
-Keep v1 small:
+## Phase 1: Command Design
 
-```text
-my-cli run                 # main interactive flow
-my-cli setup               # guided first-run setup
-my-cli config show         # inspect config safely
-my-cli config set          # update config
-my-cli config reset        # reset config
-my-cli doctor              # diagnose environment
-```
+Design examples before code.
 
-Add optional commands only when they expose real user value:
-
-```text
-my-cli profile show
-my-cli profile clear
-my-cli cache clear
-my-cli history list
-my-cli export
+```bash
+my-cli --help
+my-cli init
+my-cli check .
+my-cli fetch "query" --json
+my-cli export result --output report.md
+my-cli config show
+my-cli doctor
 ```
 
 Rules:
 
-- Prefer verbs users understand.
-- Keep aliases only when they reduce friction.
-- Ensure every interactive prompt has an equivalent flag for automation.
+- Required domain objects are arguments.
+- Behavior modifiers are options.
+- Mutating commands use clear verbs.
+- Machine-readable output is explicit.
+- Global options are consistent: `--config`, `--verbose`, `--quiet`, `--debug`, `--no-color`.
 
-## Phase 2: Project Bootstrap
+## Phase 2: Project Initialization
 
-Recommended tooling:
+Recommended package layout:
 
-- `uv` for project and lock management when available.
-- `src/` layout to prevent import confusion.
-- `pytest` for tests.
-- `ruff` for linting and formatting.
-- `typer`, `rich`, `questionary`, `pydantic`, `pydantic-settings`, `python-dotenv`, `httpx`, `litellm`, `instructor`.
+```text
+my-cli/
+  pyproject.toml
+  README.md
+  CHANGELOG.md
+  .env.example
+  src/my_cli/
+    __init__.py
+    __main__.py
+    cli.py
+    console.py
+    errors.py
+    settings.py
+    config.py
+    models.py
+    app/
+    services/
+    renderers/
+  tests/
+```
 
-Minimal `pyproject.toml` shape:
+Recommended `pyproject.toml`:
 
 ```toml
 [project]
 name = "my-cli"
 version = "0.1.0"
 requires-python = ">=3.10"
+readme = "README.md"
 dependencies = [
   "typer>=0.12",
   "rich>=13",
-  "questionary>=2",
   "pydantic>=2",
   "pydantic-settings>=2",
-  "python-dotenv>=1",
+  "platformdirs>=4",
   "httpx>=0.27",
 ]
 
 [project.scripts]
 my-cli = "my_cli.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.8"]
 ```
 
-## Phase 3: Domain Models
+Use `uv` for environment, build, and release workflows when available.
 
-Define Pydantic models before implementing long flows.
+## Phase 3: Core Models And Boundaries
 
-Common models:
+Define models early:
 
-- `UserProfile`: background, goals, resources, constraints, risk preference, output preference, updated_at, confidence.
-- `ConversationState`: current stage, known facts, pending question, rejected items, shown candidates.
-- `EvidenceItem`: source, title, url, published_at, metric, snippet, reliability.
-- `Candidate`: title, summary, evidence, scores, novelty, user_fit.
-- `Brief`: final structured artifact.
-- `ModelConfig`: provider, base_url, model, api_key_ref, mode, timeout.
-- `CacheEntry`: key, status, payload, created_at, expires_at, error_summary.
+- `AppContext`: console, settings, logger, paths.
+- `Settings`: validated config.
+- `CommandRequest`: parsed input for a command.
+- `CommandResult`: structured output and exit status.
+- `CacheEntry`: key, status, payload, created_at, expires_at.
+- `EvidenceItem`: source-backed data for data/LLM CLIs.
+- `ProviderConfig`: provider/base URL/model/credential reference.
 
-Keep fields explicit enough that invalid LLM output fails early.
+Boundaries:
 
-## Phase 4: Interaction Design
+- `cli.py`: Typer/Click only.
+- `app/`: orchestration.
+- `services/`: IO and domain operations.
+- `renderers/`: terminal/JSON/Markdown.
+- `config.py`: config discovery and precedence.
+- `errors.py`: domain exceptions and exit mapping.
 
-For multi-turn assistant CLIs:
+## Phase 4: Configuration
 
-1. Ask one open question.
-2. Interpret intent.
-3. Ask the next most useful missing question.
-4. Summarize the profile.
-5. Confirm or let the user correct.
-6. Fetch evidence.
-7. Show a ranked table.
-8. Allow selection, refresh, refinement, or free-text challenge.
-9. Generate an output file.
-10. Offer delivery or next analysis.
+Implement precedence:
 
-State machine fields:
+1. flags
+2. env vars
+3. project config
+4. user config
+5. defaults
 
-```python
-class Stage(str, Enum):
-    EXPLORE = "explore"
-    PROFILE = "profile"
-    SCAN = "scan"
-    REFINE = "refine"
-    OUTPUT = "output"
-```
-
-Do not hard-code long question chains. Decide the next prompt from missing fields and the user's latest answer.
-
-## Phase 5: Persistence And Cache
-
-Use SQLite for:
-
-- Query cache.
-- Evidence cache.
-- LLM structured output cache.
-- User profile memory.
-- Run history.
-
-Cache key should include:
-
-- Normalized query.
-- Time window.
-- Source or provider.
-- Filters.
-- Schema version.
-
-Cache entry should include:
-
-- Status.
-- Created time.
-- Expiry time.
-- Payload hash.
-- Error summary for failed calls.
-
-Commands:
+Provide commands:
 
 ```text
-my-cli cache stats
-my-cli cache clear
-my-cli profile show
-my-cli profile clear
+my-cli config show
+my-cli config path
+my-cli config set KEY VALUE
+my-cli config reset
 ```
 
-Do not cache failed empty results as valid recommendations.
+For credentials:
 
-## Phase 6: LLM Integration
+- mask values in output
+- prefer keychain or env refs for secrets
+- never commit real `.env`
 
-Support model providers through a normalized client:
+## Phase 5: Rendering And Output
 
-- OpenAI.
-- Anthropic.
-- OpenAI-compatible providers.
-- Ark or other provider-specific endpoints.
-- Local Ollama when useful.
+Create a single console factory.
 
-Configuration rules:
+Human modes:
 
-- Provider, base URL, model name, and API key must be separate.
-- Presets should help, not hide fields.
-- Verification must call the configured model.
-- Store capability probes: plain chat, JSON mode, instructor/tool mode.
+- tables for rows
+- panels for summaries
+- progress for long-running work
+- Markdown for long generated text
 
-Structured output strategy:
+Machine modes:
 
-1. Try instructor with provider-compatible mode.
-2. Fall back to JSON mode.
-3. Fall back to plain text with strict JSON extraction.
-4. Validate with Pydantic.
-5. Retry once with validation errors summarized.
-6. Fail clearly with a diagnostic command.
+- JSON without Rich markup
+- stable schema
+- documented exit codes
 
-## Phase 7: External Integrations
+## Phase 6: Cache, Logs, And Diagnostics
 
-Use adapter interfaces:
+Add cache only with clear semantics:
 
-```python
-class DeliveryChannel(Protocol):
-    name: str
-    def is_configured(self) -> bool: ...
-    def verify(self) -> VerificationResult: ...
-    def send_file(self, file_path: Path, message: str) -> DeliveryResult: ...
-```
+- cache key includes query/input/config/schema/source
+- cache status distinguishes failures from valid empty results
+- `--refresh` bypasses or varies cache
+- `cache clear` exists
 
-Keep integration-specific auth, CLI calls, and error mapping inside adapters.
+Add `doctor` when the CLI has config, network, credentials, optional tools, model providers, or generated entry points.
 
-For Feishu/Lark:
+## Phase 7: Interactive Or LLM Workflows
 
-- Detect whether `lark-cli` exists.
-- Check `auth status` for user or bot.
-- Check configured chat ID.
-- Guide users to install/auth only when missing.
-- Do not block report generation if delivery is not configured.
+For interactive flows:
 
-## Phase 8: Error Handling
+- one question at a time
+- state object
+- non-TTY fallback
+- remembered profile with `profile show` and `profile clear`
 
-Define user-facing exceptions:
+For LLM flows:
 
-- `ConfigError`
-- `ModelVerificationError`
-- `DataFetchError`
-- `CacheError`
-- `DeliveryError`
-- `UserCancelled`
+- verify provider before workflow
+- validate structured output
+- separate facts from model inference
+- retain evidence and prompt/model metadata
 
-Each error should include:
-
-- Message.
-- Likely cause.
-- Suggested command.
-- Whether retry is safe.
-
-Show tracebacks only with `--debug`.
-
-## Phase 9: Testing
+## Phase 8: Tests
 
 Minimum tests:
 
-- Import package.
-- Run `--help`.
-- Run every command's `--help`.
-- Load default settings with temp home.
-- Save, show, and clear profile.
-- Cache hit, miss, refresh, and expired behavior.
-- Model config validation without real network.
-- One offline smoke flow using fixture evidence.
+- package import
+- `--help`
+- top-level command help
+- config precedence
+- errors and exit codes
+- JSON validity
+- cache hit/miss/refresh
+- clean install smoke test
 
-Useful commands:
+Use subprocess tests for installed command confidence.
 
-```bash
-python -m pytest
-python -m my_cli --help
-my-cli doctor --json
-```
+## Phase 9: Release
 
-## Phase 10: Documentation And Release
+Checklist:
 
-README must include:
+- `README.md` has real install and usage commands
+- `CHANGELOG.md` updated
+- `pyproject.toml` metadata complete
+- wheel/sdist build succeeds
+- clean venv install succeeds
+- no secrets in repo
+- CI runs lint and tests
 
-- What the CLI is for.
-- Install command.
-- First-run setup.
-- Main workflow with screenshots or terminal examples.
-- Model provider configuration examples.
-- Config paths.
-- Troubleshooting.
-- Extension guide.
-
-Release checklist:
-
-- Clean venv install works.
-- Console script name matches README.
-- `--help` works without config.
-- Package metadata includes Python version.
-- No secrets in repo.
-- PyPI page renders README.
+Use tag-driven releases when publishing to PyPI. Keep sensitive release setup out of public docs.

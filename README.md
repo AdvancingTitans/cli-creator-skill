@@ -36,8 +36,8 @@ cli-creator-skill install --target ~/.agents/skills
 Maintainers can publish a new version by updating `pyproject.toml`, committing the change, and pushing a version tag:
 
 ```bash
-git tag v0.1.1
-git push origin v0.1.1
+git tag v0.1.2
+git push origin v0.1.2
 ```
 
 ## What This Skill Helps With
@@ -48,6 +48,7 @@ git push origin v0.1.1
 - Build natural multi-turn CLI flows without making users feel like they are filling out a form.
 - Add robust model provider configuration for OpenAI, Anthropic, Ark/OpenAI-compatible endpoints, and local models.
 - Add cache, profile memory, diagnostics, and first-run setup flows.
+- Audit machine-readable diagnostics, cache status metadata, package-data drift, and release-copy synchronization.
 
 ## Repository Structure
 
@@ -59,6 +60,7 @@ cli-creator-skill/
       creation-playbook.md
       pitfalls-and-solutions.md
       review-rubric.md
+      technical-best-practices.md
   src/cli_creator_skill/
     installer.py
     __main__.py
