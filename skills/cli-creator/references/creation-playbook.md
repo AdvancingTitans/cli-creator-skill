@@ -21,6 +21,8 @@ Write:
 - expected output forms
 - failure/recovery model
 
+Minimal exception: if the tool is one or two commands, no persistent state, no network, no credentials, no plugins, and mostly internal, keep it simple with argparse or a tiny Typer/Click app, tests, README examples, and clear exit codes. Do not add Rich, Pydantic, platformdirs, cache, `doctor`, or plugin systems unless they solve an immediate user problem.
+
 ## Phase 1: Command Design
 
 Design examples before code.
@@ -196,6 +198,11 @@ Minimum tests:
 - JSON validity
 - cache hit/miss/refresh
 - clean install smoke test
+- stdin/stdout/stderr separation
+- invalid config or invalid JSON
+- non-TTY, `NO_COLOR`, and narrow terminal behavior
+- cancellation/network timeout for long-running or networked tools
+- installed wheel smoke test from outside the repo
 
 Use subprocess tests for installed command confidence.
 
@@ -212,3 +219,18 @@ Checklist:
 - CI runs lint and tests
 
 Use tag-driven releases when publishing to PyPI. Keep sensitive release setup out of public docs.
+
+Standard verification command pack:
+
+```bash
+uv venv /tmp/cli-audit
+. /tmp/cli-audit/bin/activate
+uv pip install -e .
+my-cli --help
+my-cli --version
+my-cli SUBCOMMAND --help
+my-cli SAMPLE --json | python -m json.tool
+uv build
+uv pip install dist/*.whl
+python -m pytest
+```

@@ -1,11 +1,13 @@
 ---
 name: cli-creator
-description: Use when designing, scaffolding, refactoring, or auditing Python CLI tools, including command-first CLIs, configuration-driven tools, performance-oriented utilities, interactive assistants, data pipelines, and LLM-enabled command line products.
+description: Use when designing, scaffolding, refactoring, or auditing Python CLI tools or CLI-related skills/templates, including command-first CLIs, configuration-driven tools, performance-oriented utilities, interactive assistants, data pipelines, LLM-enabled command line products, Typer, Click, argparse, uv, packaging, testing, and release workflows.
 ---
 
 # CLI Creator
 
 Use this skill to create or review production-grade Python CLI tools. Apply it to Typer, Click, argparse, or hybrid CLIs, with special attention to command design, configuration, terminal UX, packaging, performance, testability, and long-term maintenance.
+
+Related themes: Python packaging, CLI release workflows, debugging, software delivery, agent skill/template maintenance.
 
 ## Step 1: Learn And Extract Principles
 
@@ -109,6 +111,18 @@ Default Python stack:
 
 Add questionary only when prompts are core to the product. Add litellm/instructor only when LLM calls are genuinely needed.
 
+### Minimal CLI Exception
+
+Do not over-design tiny tools. If the CLI has one or two commands, no persistent state, no network, no plugins, no credentials, and no public support burden, prefer:
+
+- argparse or a very small Typer/Click app
+- direct functions with tests
+- README examples
+- clear exit codes
+- packaging only if users need installation
+
+Do not force Pydantic, Rich, platformdirs, cache layers, `doctor`, plugin registries, or config schemas onto an internal script unless they solve an immediate problem.
+
 ### 4. Pick An Architecture Level
 
 Choose the smallest architecture that will survive the next two releases:
@@ -148,20 +162,78 @@ Always verify:
 - cache refresh and cache clear
 - packaging metadata and console script
 
+Use this verification command pack when applicable, replacing `my-cli` and sample commands with the real command surface:
+
+```bash
+uv venv /tmp/cli-audit
+. /tmp/cli-audit/bin/activate
+uv pip install -e .
+my-cli --help
+my-cli --version
+my-cli SUBCOMMAND --help
+my-cli SAMPLE --json | python -m json.tool
+uv build
+uv pip install dist/*.whl
+python -m pytest
+```
+
+For wheel confidence, run the installed command from outside the repository directory.
+
 ## Review Workflow
 
 When auditing an existing CLI:
+
+Before reviewing, read:
+
+- `references/review-rubric.md`
+- `references/pitfalls-and-solutions.md`
+
+Read `references/technical-best-practices.md` when the audit touches implementation details, packaging, security, cross-platform behavior, Rich output, caching, or LLM providers.
+
+Then:
 
 1. Inspect repository shape: package layout, command entry points, config files, tests, docs, CI.
 2. Run help: `my-cli --help` and command-level help.
 3. Trace one successful command from CLI callback to domain service to renderer.
 4. Trace one failure path and inspect error quality.
 5. Check configuration precedence: flags, env, project config, user config, defaults.
-6. Check performance: startup imports, network timeouts, cache behavior, file discovery.
-7. Check automation: exit codes, JSON output, non-TTY behavior.
-8. Check packaging: Python version, dependencies, scripts, wheels, README commands.
-9. Score with `references/review-rubric.md`.
-10. Return findings first, then prioritized fixes.
+6. Check security: secrets, shell execution, path handling, unsafe config/plugins, telemetry, subprocess timeouts, dependency supply chain.
+7. Check performance: startup imports, network timeouts, cache behavior, file discovery.
+8. Check automation: exit codes, JSON output, stdin/stdout/stderr separation, non-TTY behavior.
+9. Check packaging: Python version, dependencies, scripts, wheels, README commands.
+10. Score every rubric area with `references/review-rubric.md`.
+11. Return findings first, then prioritized fixes.
+
+Audit output must include these sections:
+
+```markdown
+**Findings**
+
+**Scores**
+
+| Area | Score | Notes |
+|---|---:|---|
+
+**Repair Order**
+
+**Test Gaps**
+
+**Verification Commands**
+```
+
+### When Auditing A CLI-Related Skill Or Template
+
+If the target is an agent skill, starter template, cookiecutter, scaffold, or reusable CLI project skeleton, audit it as a product contract, not only as code.
+
+Check:
+
+- Trigger description: clear enough for the agent to load it at the right time.
+- Main workflow: concrete ordered steps, with required references named before action.
+- Reference files: complete, non-duplicative, discoverable from `SKILL.md`, and loaded only when needed.
+- Executable command templates: install, help, JSON, build, test, and release commands are present.
+- Output contract: review or creation outputs have fixed required sections.
+- Verification steps: real command pack exists and distinguishes source install from wheel install.
+- Maintenance strategy: versioning, changelog/release-copy sync, and drift checks are explicit.
 
 ## Common Pitfalls
 
@@ -235,6 +307,7 @@ Read `references/technical-best-practices.md` when implementing:
 - Config precedence with TOML, env vars, flags, and secrets.
 - Rich rendering rules for tables, progress, panels, Markdown, and tracebacks.
 - Cache, logs, error classes, exit codes, and JSON output.
+- Security, cross-platform terminal behavior, subprocess safety, and dependency supply chain.
 - Packaging with `pyproject.toml`, uv, wheels, and CI.
 
 ## Output Expectations
@@ -253,10 +326,10 @@ For a review, deliver:
 
 - Findings ordered by severity.
 - File/line references.
-- Reproduction steps.
-- Concrete fixes.
+- Scores table using `references/review-rubric.md`.
+- Repair order.
 - Test gaps.
-- Suggested migration sequence.
+- Verification commands actually run or recommended.
 
 ## References
 

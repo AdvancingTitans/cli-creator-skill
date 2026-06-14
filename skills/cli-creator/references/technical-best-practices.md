@@ -103,6 +103,9 @@ Support:
 - `--quiet`
 - `--verbose`
 - terminal width constraints
+- non-TTY mode
+- `NO_COLOR`
+- CI logs
 
 Never print Rich markup into JSON output.
 
@@ -177,6 +180,8 @@ Measure:
 - hot cache path
 - large input path
 - network timeout path
+- cancellation path
+- non-TTY/scripted path
 
 Patterns:
 
@@ -186,6 +191,37 @@ Patterns:
 - Stream large files.
 - Use concurrency only behind a clear service layer.
 - Keep progress feedback honest; do not animate when nothing is happening.
+
+## Security
+
+Treat shell commands, config, plugins, and support bundles as trust boundaries.
+
+Rules:
+
+- Avoid `shell=True`; pass subprocess arguments as lists.
+- Set timeouts for subprocesses, HTTP calls, provider probes, and plugin hooks.
+- Normalize and validate paths before reading, writing, extracting, or caching.
+- Reject path traversal outside intended roots.
+- Use safe config parsers; never execute config files.
+- Make untrusted plugins opt-in, versioned, and inspectable.
+- Mask tokens in logs, config display, tracebacks, remote URLs, and support bundles.
+- Keep telemetry opt-in or clearly disclosed with a working opt-out.
+- Run dependency/supply-chain checks appropriate to the project before release.
+
+## Cross-Platform Behavior
+
+Design for macOS, Linux, Windows, CI, pipes, and narrow terminals when the tool is public.
+
+Check:
+
+- `pathlib` and platformdirs instead of hardcoded `/tmp`, home paths, or separators.
+- PowerShell examples when docs claim Windows support.
+- UTF-8 encoding and newline behavior for files, stdin, stdout, and stderr.
+- TTY/non-TTY detection for prompts, progress, color, and paging.
+- `NO_COLOR`, `--no-color`, `COLUMNS`, and CI terminal width.
+- Shell completion for every supported shell, not just the author's shell.
+
+Keep POSIX-only shortcuts acceptable for private/internal scripts, but name that constraint clearly.
 
 ## Packaging And Distribution
 
@@ -212,6 +248,9 @@ Verify:
 - clean venv install
 - installed command path
 - `my-cli --help`
+- `my-cli --version`
+- each top-level command `--help`
+- representative JSON output parsed with `python -m json.tool`
 - PyPI README rendering
 - required package data appears in wheel/sdist
 - release copy matches source when publishing generated skills/templates
@@ -230,8 +269,15 @@ Minimum:
 - JSON output validity
 - one success smoke test
 - packaging metadata
+- stdin/stdout/stderr separation
+- invalid JSON/config and missing config paths
+- non-TTY mode and color-disabled mode
+- cancellation and timeout paths for long-running or networked commands
+- installed-wheel smoke test from outside the repo
 
 Use subprocess tests for installed-command confidence. Use Typer/Click runners for fast parser tests.
+
+Avoid full snapshots of Rich output unless layout is the behavior under test. Prefer semantic assertions over parsed JSON, exit codes, stderr messages, and key table labels.
 
 ## LLM-Enabled CLIs
 
@@ -245,3 +291,8 @@ Rules:
 - Record model, response mode, prompt version, and validation errors.
 - Provide deterministic fallback or clear failure.
 - Never represent model guesses as sourced facts.
+- Probe provider capabilities before selecting JSON mode, tool mode, streaming, or vision/audio features.
+- Add structured-output fallback when provider support is partial.
+- Log token and cost metadata when available.
+- Apply retry/backoff for rate limits and transient network errors.
+- Export an evidence bundle for research/data workflows: source objects, prompt/version metadata, provider/model, validation errors, and final outputs.

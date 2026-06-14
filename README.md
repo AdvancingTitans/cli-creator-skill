@@ -36,8 +36,8 @@ cli-creator-skill install --target ~/.agents/skills
 Maintainers can publish a new version by updating `pyproject.toml`, committing the change, and pushing a version tag:
 
 ```bash
-git tag v0.1.2
-git push origin v0.1.2
+git tag v0.1.3
+git push origin v0.1.3
 ```
 
 ## What This Skill Helps With
@@ -49,6 +49,8 @@ git push origin v0.1.2
 - Add robust model provider configuration for OpenAI, Anthropic, Ark/OpenAI-compatible endpoints, and local models.
 - Add cache, profile memory, diagnostics, and first-run setup flows.
 - Audit machine-readable diagnostics, cache status metadata, package-data drift, and release-copy synchronization.
+- Enforce review outputs with findings, scores, repair order, test gaps, and verification commands.
+- Review CLI-related skills and templates for trigger clarity, reference completeness, command templates, output contracts, and maintenance strategy.
 
 ## Repository Structure
 
@@ -79,15 +81,9 @@ Use this skill when you ask:
 - "帮我设计模型配置、缓存、doctor、profile memory"
 - "帮我发布一个可 pip install 的 CLI"
 
-## Sources And Design Influences
+## Design Basis
 
-This skill distills practical lessons from building interactive Python CLIs and from studying mature CLI projects and documentation patterns, including:
-
-- [larksuite/cli](https://github.com/larksuite/cli)
-- [soongenwong/claudecode](https://github.com/soongenwong/claudecode)
-- [Astral uv](https://github.com/astral-sh/uv)
-- [Astral ruff](https://github.com/astral-sh/ruff)
-- Typer, Rich, questionary, Pydantic, litellm, and instructor project practices
+This skill distills maintainer experience and official documentation patterns for Python packaging, Typer, Click, Rich, uv, Ruff, Pydantic, and LLM provider integration. It does not vendor code or instructions from unofficial third-party repositories.
 
 ## License
 

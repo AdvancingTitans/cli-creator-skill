@@ -358,3 +358,123 @@ Solution:
 - Use explicit file sync, clean destination directories, or package-data tests.
 - Run `diff -qr` between source and release copy before publishing.
 - Inspect wheel/sdist contents for required assets.
+
+## 21. Shell Injection And Unsafe Subprocesses
+
+Problem: User input is interpolated into shell commands, hooks, or external tool calls.
+
+Typical signs:
+
+- `shell=True` receives paths, URLs, branch names, prompts, or config values.
+- Commands are assembled as strings instead of argument lists.
+- Subprocess calls can hang forever.
+
+Solution:
+
+- Prefer `subprocess.run([...], shell=False, timeout=...)`.
+- Validate and normalize paths before execution.
+- Separate command arguments from display strings.
+- Capture stderr safely and mask secrets before logging.
+
+## 22. Path Traversal And Unsafe File Writes
+
+Problem: Output paths, archive entries, cache keys, or config values can escape intended directories.
+
+Typical signs:
+
+- The tool writes files based on raw user names or remote filenames.
+- Archive extraction trusts member paths.
+- Cache paths include unsanitized URLs or prompts.
+
+Solution:
+
+- Resolve paths and verify they remain under the expected root.
+- Reject absolute paths or `..` where not explicitly allowed.
+- Sanitize cache keys and filenames.
+- Use atomic writes for generated files and config updates.
+
+## 23. Unsafe Config Or Plugin Loading
+
+Problem: Config or plugins execute code without a deliberate trust boundary.
+
+Typical signs:
+
+- YAML/object loaders instantiate arbitrary classes.
+- Plugin directories under project roots are auto-imported.
+- Remote plugin URLs are installed or loaded without confirmation.
+
+Solution:
+
+- Use safe parsers (`tomllib`, JSON, safe YAML loaders).
+- Make plugin loading opt-in and versioned.
+- Show plugin path, package, and permissions in `doctor`.
+- Disable untrusted plugins in CI/non-TTY unless explicitly enabled.
+
+## 24. Telemetry Or Support Bundles Leak Data
+
+Problem: Diagnostics help maintainers but surprise users or expose secrets.
+
+Typical signs:
+
+- Telemetry is enabled by default without clear disclosure.
+- `doctor --json` includes raw config, tokens, URLs with credentials, or prompts.
+- Support bundles include cache payloads or generated reports by default.
+
+Solution:
+
+- Make telemetry opt-in or clearly disclosed with an opt-out.
+- Mask tokens, credential URLs, local private paths, and prompt payloads.
+- Provide `support-bundle --redacted` as the default.
+
+## 25. Cross-Platform Assumptions
+
+Problem: The CLI works on the author's macOS/Linux machine but fails on Windows, CI, or narrow terminals.
+
+Typical signs:
+
+- Docs use only POSIX shell syntax.
+- Paths assume `/tmp`, `/`, `:` separators, or executable bits.
+- Output assumes a TTY, color support, or wide terminal.
+- Completion is tested in one shell only.
+
+Solution:
+
+- Use `pathlib`, platformdirs, and portable temp directories.
+- Add PowerShell examples for Windows-facing tools.
+- Respect UTF-8, newline, `NO_COLOR`, CI, and non-TTY behavior.
+- Verify completion for the shells the project claims to support.
+
+## 26. Test Matrix Looks Broad But Misses CLI Reality
+
+Problem: Tests pass while real users still hit parser, terminal, install, and IO failures.
+
+Typical signs:
+
+- No stdin/stdout/stderr separation tests.
+- JSON tests compare strings instead of parsing JSON.
+- Rich output snapshots fail for harmless width/color changes.
+- Wheel install is never tested.
+
+Solution:
+
+- Test help, version, subcommand help, JSON parsing, invalid config, and non-TTY mode.
+- Test Ctrl-C/cancellation, network timeout, large input, and streaming paths when relevant.
+- Smoke-test the installed wheel from outside the repo.
+- Prefer semantic assertions over brittle Rich full-output snapshots.
+
+## 27. LLM CLI Observability Is Too Thin
+
+Problem: LLM-backed commands fail mysteriously or cannot be audited.
+
+Typical signs:
+
+- Provider capabilities are assumed from provider name.
+- Structured output mode fails with no fallback.
+- Token/cost, prompt version, model, and evidence are not retained.
+
+Solution:
+
+- Probe capabilities: plain chat, JSON mode, tool mode, streaming.
+- Add structured-output fallback or fail with a concrete repair hint.
+- Log retry/backoff and rate-limit handling without leaking prompts or tokens.
+- Export an evidence bundle with sources, prompt/version metadata, validation errors, and model details when the workflow produces claims.
