@@ -30,7 +30,7 @@
   - Evidence: skill-ir/cli-creator.json, skill-ir/schema.json
 - [PASS] `ir:schema-version` — schema_version=1.0
   - Evidence: skill-ir/cli-creator.json
-- [PASS] `ir:version-parity` — IR version=0.1.3 pyproject version=0.1.3
+- [PASS] `ir:version-parity` — IR version=0.1.4 pyproject version=0.1.4
   - Evidence: skill-ir/cli-creator.json, pyproject.toml
 - [PASS] `ir:job-to-be-done` — job_to_be_done is populated
   - Evidence: skill-ir/cli-creator.json

@@ -29,6 +29,7 @@ def load_gate_module():
 
 
 gate = load_gate_module()
+CURRENT_VERSION = gate.parse_pyproject(ROOT)["version"]
 
 
 def copy_repo_to_temp(tmp_root: Path) -> Path:
@@ -97,8 +98,8 @@ class ReviewGateTests(unittest.TestCase):
                 for member in gate.WHEEL_REQUIRED_MEMBERS:
                     archive.writestr(member, "fixture")
                 archive.writestr(
-                    "cli_creator_skill-0.1.3.dist-info/METADATA",
-                    "Name: cli-creator-skill\nVersion: 0.1.3\n",
+                    f"cli_creator_skill-{CURRENT_VERSION}.dist-info/METADATA",
+                    f"Name: cli-creator-skill\nVersion: {CURRENT_VERSION}\n",
                 )
             findings = gate.inspect_wheel(ROOT, wheel_path)
             self.assertTrue(all(item.status == "PASS" for item in findings if item.blocking))
@@ -109,9 +110,10 @@ class ReviewGateTests(unittest.TestCase):
             with zipfile.ZipFile(wheel_path, "w") as archive:
                 for member in gate.WHEEL_REQUIRED_MEMBERS:
                     archive.writestr(member, "fixture")
+                mismatch_version = "0.0.0" if CURRENT_VERSION != "0.0.0" else "0.0.1"
                 archive.writestr(
-                    "cli_creator_skill-0.1.2.dist-info/METADATA",
-                    "Name: cli-creator-skill\nVersion: 0.1.2\n",
+                    f"cli_creator_skill-{mismatch_version}.dist-info/METADATA",
+                    f"Name: cli-creator-skill\nVersion: {mismatch_version}\n",
                 )
             findings = gate.inspect_wheel(ROOT, wheel_path)
             target = next(item for item in findings if item.check == "wheel:metadata-version")
@@ -126,6 +128,18 @@ class ReviewGateTests(unittest.TestCase):
             registry_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
             findings = gate.validate_trust(temp_root)
             target = next(item for item in findings if item.check == "trust:registry-trust-level")
+            self.assertEqual(target.status, "FAIL")
+
+    def test_package_version_parity_is_checked(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            temp_root = copy_repo_to_temp(Path(tmp_dir))
+            init_path = temp_root / "src" / "cli_creator_skill" / "__init__.py"
+            init_path.write_text(
+                '"""Installer package for the cli-creator skill."""\n\n__version__ = "0.0.0"\n',
+                encoding="utf-8",
+            )
+            findings = gate.validate_registry(temp_root)
+            target = next(item for item in findings if item.check == "registry:package-version-parity")
             self.assertEqual(target.status, "FAIL")
 
 

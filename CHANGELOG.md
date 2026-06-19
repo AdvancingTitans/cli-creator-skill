@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.4
 
 - Slim `skills/cli-creator/SKILL.md` into a router while preserving the CLI type selection, minimal CLI/YAGNI rule, creation flow, review flow, and fixed audit headings.
 - Add lightweight Skill OS governance routing for `skill-ir/`, `evals/`, `scripts/`, `reports/`, and `registry/` when maintaining the package.

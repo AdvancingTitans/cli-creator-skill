@@ -173,6 +173,13 @@ def parse_pyproject(root: Path) -> dict:
     return data
 
 
+def parse_package_version(root: Path) -> Optional[str]:
+    init_path = root / "src" / "cli_creator_skill" / "__init__.py"
+    text = init_path.read_text(encoding="utf-8")
+    match = re.search(r'__version__\s*=\s*"([^"]+)"', text)
+    return match.group(1) if match else None
+
+
 def load_ir(root: Path) -> dict:
     return load_json(root / "skill-ir" / "cli-creator.json")
 
@@ -471,6 +478,7 @@ def validate_registry(root: Path) -> list[Finding]:
     registry_path = root / "registry" / "package.json"
     registry = load_registry(root)
     pyproject = parse_pyproject(root)
+    package_version = parse_package_version(root)
     required = [
         "name",
         "version",
@@ -502,6 +510,15 @@ def validate_registry(root: Path) -> list[Finding]:
             status="PASS" if registry.get("version") == pyproject.get("version") else "FAIL",
             message=f"registry version={registry.get('version')} pyproject version={pyproject.get('version')}",
             evidence=[relative_evidence(root, registry_path), relative_evidence(root, root / "pyproject.toml")],
+        ),
+        Finding(
+            check="registry:package-version-parity",
+            status="PASS" if package_version == pyproject.get("version") else "FAIL",
+            message=f"package __version__={package_version} pyproject version={pyproject.get('version')}",
+            evidence=[
+                relative_evidence(root, root / "src" / "cli_creator_skill" / "__init__.py"),
+                relative_evidence(root, root / "pyproject.toml"),
+            ],
         ),
         Finding(
             check="registry:license-parity",
