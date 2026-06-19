@@ -1,0 +1,84 @@
+# Skill Overview
+
+- Status: PASS
+
+- [PASS] `frontmatter:name` — name found
+  - Evidence: skills/cli-creator/SKILL.md
+- [PASS] `frontmatter:description` — description found
+  - Evidence: skills/cli-creator/SKILL.md
+- [PASS] `output-heading:Findings` — Findings heading present
+  - Evidence: skills/cli-creator/SKILL.md
+- [PASS] `output-heading:Scores` — Scores heading present
+  - Evidence: skills/cli-creator/SKILL.md
+- [PASS] `output-heading:Repair Order` — Repair Order heading present
+  - Evidence: skills/cli-creator/SKILL.md
+- [PASS] `output-heading:Test Gaps` — Test Gaps heading present
+  - Evidence: skills/cli-creator/SKILL.md
+- [PASS] `output-heading:Verification Commands` — Verification Commands heading present
+  - Evidence: skills/cli-creator/SKILL.md
+- [PASS] `references:declared` — found 4 referenced markdown file(s)
+  - Evidence: skills/cli-creator/SKILL.md
+- [PASS] `reference:references/creation-playbook.md` — references/creation-playbook.md exists
+  - Evidence: skills/cli-creator/references/creation-playbook.md
+- [PASS] `reference:references/pitfalls-and-solutions.md` — references/pitfalls-and-solutions.md exists
+  - Evidence: skills/cli-creator/references/pitfalls-and-solutions.md
+- [PASS] `reference:references/review-rubric.md` — references/review-rubric.md exists
+  - Evidence: skills/cli-creator/references/review-rubric.md
+- [PASS] `reference:references/technical-best-practices.md` — references/technical-best-practices.md exists
+  - Evidence: skills/cli-creator/references/technical-best-practices.md
+- [PASS] `ir:required-fields` — all Skill OS IR required fields present
+  - Evidence: skill-ir/cli-creator.json, skill-ir/schema.json
+- [PASS] `ir:schema-version` — schema_version=1.0
+  - Evidence: skill-ir/cli-creator.json
+- [PASS] `ir:version-parity` — IR version=0.1.3 pyproject version=0.1.3
+  - Evidence: skill-ir/cli-creator.json, pyproject.toml
+- [PASS] `ir:job-to-be-done` — job_to_be_done is populated
+  - Evidence: skill-ir/cli-creator.json
+- [PASS] `ir:workflow-steps` — workflow defines 3 step(s)
+  - Evidence: skill-ir/cli-creator.json
+- [PASS] `ir:trigger-surface:should_trigger` — should_trigger examples: 2
+  - Evidence: skill-ir/cli-creator.json
+- [PASS] `ir:trigger-surface:should_not_trigger` — should_not_trigger examples: 2
+  - Evidence: skill-ir/cli-creator.json
+- [PASS] `ir:trigger-surface:edge_cases` — edge_cases examples: 1
+  - Evidence: skill-ir/cli-creator.json
+- [PASS] `ir:resources:references` — references entries: 4
+  - Evidence: skill-ir/cli-creator.json
+- [PASS] `ir:resource-exists:skills/cli-creator/references/creation-playbook.md` — skills/cli-creator/references/creation-playbook.md exists
+  - Evidence: skills/cli-creator/references/creation-playbook.md
+- [PASS] `ir:resource-exists:skills/cli-creator/references/pitfalls-and-solutions.md` — skills/cli-creator/references/pitfalls-and-solutions.md exists
+  - Evidence: skills/cli-creator/references/pitfalls-and-solutions.md
+- [PASS] `ir:resource-exists:skills/cli-creator/references/review-rubric.md` — skills/cli-creator/references/review-rubric.md exists
+  - Evidence: skills/cli-creator/references/review-rubric.md
+- [PASS] `ir:resource-exists:skills/cli-creator/references/technical-best-practices.md` — skills/cli-creator/references/technical-best-practices.md exists
+  - Evidence: skills/cli-creator/references/technical-best-practices.md
+- [PASS] `ir:resources:scripts` — scripts entries: 1
+  - Evidence: skill-ir/cli-creator.json
+- [PASS] `ir:resource-exists:scripts/cli_creator_review_gate.py` — scripts/cli_creator_review_gate.py exists
+  - Evidence: scripts/cli_creator_review_gate.py
+- [PASS] `ir:resources:reports` — reports entries: 4
+  - Evidence: skill-ir/cli-creator.json
+- [PASS] `ir:resource-exists:reports/skill_overview.md` — reports/skill_overview.md declared
+  - Evidence: reports/skill_overview.md
+- [PASS] `ir:resource-exists:reports/output_eval_scorecard.md` — reports/output_eval_scorecard.md declared
+  - Evidence: reports/output_eval_scorecard.md
+- [PASS] `ir:resource-exists:reports/package_verification.md` — reports/package_verification.md declared
+  - Evidence: reports/package_verification.md
+- [PASS] `ir:resource-exists:reports/trust_report.md` — reports/trust_report.md declared
+  - Evidence: reports/trust_report.md
+- [PASS] `ir:eval-plan:trigger` — trigger eval plan points to evals/trigger_cases.json
+  - Evidence: skill-ir/cli-creator.json, evals/trigger_cases.json
+- [PASS] `ir:eval-plan:output` — output eval plan points to evals/output_cases.json
+  - Evidence: skill-ir/cli-creator.json, evals/output_cases.json
+- [PASS] `ir:risk:output_risk` — output_risk present
+  - Evidence: skill-ir/cli-creator.json
+- [PASS] `ir:risk:execution_risk` — execution_risk present
+  - Evidence: skill-ir/cli-creator.json
+- [PASS] `ir:risk:trust_boundary` — trust_boundary present
+  - Evidence: skill-ir/cli-creator.json
+- [PASS] `ir:governance-owner` — IR owner=yjw registry owner=yjw
+  - Evidence: skill-ir/cli-creator.json, registry/package.json
+- [PASS] `ir:governance-maturity` — IR maturity=alpha registry maturity=alpha
+  - Evidence: skill-ir/cli-creator.json, registry/package.json
+- [PASS] `ir:governance-review-cadence` — IR review_cadence=per-release registry review_cadence=per-release
+  - Evidence: skill-ir/cli-creator.json, registry/package.json

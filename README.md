@@ -1,12 +1,12 @@
 # cli-creator
 
-`cli-creator` is a reusable agent skill for designing, building, and auditing high-quality Python CLI tools.
+`cli-creator` is a reusable agent skill for designing, building, and auditing Python CLI tools.
 
-It is especially useful for Typer + Rich + questionary projects with interactive flows, data fetching, caching, LLM provider setup, structured output, local profile memory, and multi-channel delivery.
+`skills/cli-creator/SKILL.md` is intentionally a router. The detailed guidance lives in the four reference docs, while maintainer-side governance can live in lightweight workspace-root folders when you need them.
 
 ## Install As A Codex Skill
 
-Clone this repository and copy the skill directory into your Codex skills folder:
+Copy the skill directory into your Codex skills folder:
 
 ```bash
 git clone https://github.com/AdvancingTitans/cli-creator-skill.git
@@ -18,12 +18,12 @@ Then ask your agent to use `cli-creator` when creating or reviewing CLI tools.
 
 ## Install From PyPI
 
+The console script is `cli-creator-skill`.
+
 ```bash
 pip install cli-creator-skill
 cli-creator-skill install
 ```
-
-By default this installs the skill to `~/.codex/skills/cli-creator`.
 
 Install to a custom directory:
 
@@ -31,28 +31,49 @@ Install to a custom directory:
 cli-creator-skill install --target ~/.agents/skills
 ```
 
-## Release
-
-Maintainers can publish a new version by updating `pyproject.toml`, committing the change, and pushing a version tag:
+Source install is the same console script after editable install:
 
 ```bash
-git tag v0.1.3
-git push origin v0.1.3
+uv pip install -e .
+cli-creator-skill install
+```
+
+## Lightweight Skill OS Governance
+
+When you maintain this package, keep the governance artifacts small and local to the workspace root. Use them as routing aids, not as shipped skill content:
+
+- `skill-ir/` — skill intent, review notes, and IR snapshots.
+- `evals/` — evaluation cases and result checks.
+- `scripts/` — one-off gates and helper commands, including `scripts/cli_creator_review_gate.py`.
+- `reports/` — the four Markdown audit reports emitted by the review gate.
+- `registry/` — skill/package registry notes.
+
+## One-Command Review Gate
+
+For a quick package check, run the review gate directly:
+
+```bash
+python3 scripts/cli_creator_review_gate.py
+```
+
+For release verification, build the wheel first and then run the gate against the built wheel:
+
+```bash
+tmpdir=$(mktemp -d) && uv build --out-dir "$tmpdir" && python3 scripts/cli_creator_review_gate.py --wheel "$tmpdir"/cli_creator_skill-*.whl
 ```
 
 ## What This Skill Helps With
 
 - Design a new Python CLI from scratch.
 - Review an existing CLI for UX, packaging, errors, model setup, caching, and maintainability.
-- Structure Typer + Rich + questionary applications.
+- Structure Typer, Click, argparse, or hybrid applications.
 - Build natural multi-turn CLI flows without making users feel like they are filling out a form.
-- Add robust model provider configuration for OpenAI, Anthropic, Ark/OpenAI-compatible endpoints, and local models.
-- Add cache, profile memory, diagnostics, and first-run setup flows.
-- Audit machine-readable diagnostics, cache status metadata, package-data drift, and release-copy synchronization.
-- Enforce review outputs with findings, scores, repair order, test gaps, and verification commands.
+- Add diagnostics, cache, profile memory, and first-run setup flows when they are actually needed.
 - Review CLI-related skills and templates for trigger clarity, reference completeness, command templates, output contracts, and maintenance strategy.
 
 ## Repository Structure
+
+Maintainer-side governance folders are shown here as workspace-root aids, not as generated output and not as bundled skill content:
 
 ```text
 cli-creator-skill/
@@ -66,9 +87,13 @@ cli-creator-skill/
   src/cli_creator_skill/
     installer.py
     __main__.py
-  pyproject.toml
-  README.md
-  LICENSE
+  tests/
+  .github/workflows/test.yml
+  skill-ir/
+  evals/
+  scripts/
+  reports/
+  registry/
 ```
 
 ## Usage

@@ -1,0 +1,23 @@
+{
+  "skill": "cli-creator",
+  "cases": [
+    {
+      "id": "positive-cli-design",
+      "kind": "positive",
+      "prompt": "帮我从零设计一个 Python CLI，并给出 packaging 方案。",
+      "expected_match": true
+    },
+    {
+      "id": "negative-email",
+      "kind": "negative",
+      "prompt": "起草一封发给客户的邮件。",
+      "expected_match": false
+    },
+    {
+      "id": "edge-skill-audit",
+      "kind": "edge",
+      "prompt": "这个 CLI skill 模板的安装命令和 wheel 内容靠谱吗？",
+      "expected_match": true
+    }
+  ]
+}

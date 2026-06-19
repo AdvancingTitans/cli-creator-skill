@@ -1,0 +1,24 @@
+{
+  "skill": "cli-creator",
+  "minimum_sections": [
+    "Findings",
+    "Scores",
+    "Repair Order",
+    "Test Gaps",
+    "Verification Commands"
+  ],
+  "cases": [
+    {
+      "id": "audit-review-complete",
+      "sample": "**Findings**\n\nPackaging metadata matches the wheel.\n\n**Scores**\n\n| Area | Score | Notes |\n|---|---:|---|\n| Packaging | 5 | Wheel and source agree |\n| UX | 4 | Clear install flow |\n\n**Repair Order**\n\n1. Add a smoke install job.\n\n**Test Gaps**\n\n- Add an old-wheel regression test.\n\n**Verification Commands**\n\n- python3 scripts/cli_creator_review_gate.py\n- python3 -m unittest discover -s tests -v\n"
+    },
+    {
+      "id": "new-cli-design-complete",
+      "sample": "**Findings**\n\nThe command tree is small and scriptable.\n\n**Scores**\n\n| Area | Score | Notes |\n|---|---:|---|\n| Command Surface | 5 | One obvious main path |\n| Automation | 4 | JSON mode preserved |\n\n**Repair Order**\n\n1. Freeze command names.\n2. Add install verification.\n\n**Test Gaps**\n\n- Missing non-TTY smoke test.\n\n**Verification Commands**\n\n- cli-creator-skill install\n- python -m my_cli --help\n"
+    },
+    {
+      "id": "skill-template-audit-complete",
+      "sample": "**Findings**\n\nReference loading is explicit and review headings are stable.\n\n**Scores**\n\n| Area | Score | Notes |\n|---|---:|---|\n| Skill Triggering | 4 | Edge case wording covered |\n| Maintenance | 4 | Release checks documented |\n\n**Repair Order**\n\n1. Add release-time checksum capture.\n\n**Test Gaps**\n\n- Missing fixture for removed heading.\n\n**Verification Commands**\n\n- uv build\n- python3 scripts/cli_creator_review_gate.py --wheel dist/cli_creator_skill-0.1.3-py3-none-any.whl\n"
+    }
+  ]
+}

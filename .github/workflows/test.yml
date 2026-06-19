@@ -1,0 +1,47 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Run review gate
+        run: python3 scripts/cli_creator_review_gate.py
+
+      - name: Run unit tests
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Build package
+        run: uv build
+
+      - name: Verify built wheel
+        run: |
+          wheel="$(find dist -maxdepth 1 -name '*.whl' -print -quit)"
+          test -n "$wheel"
+          python3 scripts/cli_creator_review_gate.py --wheel "$wheel"
+
+      - name: Smoke test installed wheel
+        run: |
+          wheel="$(find dist -maxdepth 1 -name '*.whl' -print -quit)"
+          test -n "$wheel"
+          uv venv /tmp/cli-creator-wheel-smoke
+          uv pip install --python /tmp/cli-creator-wheel-smoke/bin/python "$wheel"
+          /tmp/cli-creator-wheel-smoke/bin/cli-creator-skill --help
+          rm -rf /tmp/cli-creator-installed-skill
+          /tmp/cli-creator-wheel-smoke/bin/cli-creator-skill install --target /tmp/cli-creator-installed-skill
+          test -f /tmp/cli-creator-installed-skill/cli-creator/SKILL.md
+          test -f /tmp/cli-creator-installed-skill/cli-creator/references/creation-playbook.md
+          test -f /tmp/cli-creator-installed-skill/cli-creator/references/pitfalls-and-solutions.md
+          test -f /tmp/cli-creator-installed-skill/cli-creator/references/review-rubric.md
+          test -f /tmp/cli-creator-installed-skill/cli-creator/references/technical-best-practices.md

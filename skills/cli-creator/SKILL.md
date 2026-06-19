@@ -5,80 +5,70 @@ description: Use when designing, scaffolding, refactoring, or auditing Python CL
 
 # CLI Creator
 
-Use this skill to create or review production-grade Python CLI tools. Apply it to Typer, Click, argparse, or hybrid CLIs, with special attention to command design, configuration, terminal UX, packaging, performance, testability, and long-term maintenance.
+Router for building and auditing production-grade Python CLI tools and CLI-related skills/templates. Use it to decide CLI shape, keep the command surface small, preserve installability, and enforce review outputs. This skill stays lightweight: read only the references you need.
 
-Related themes: Python packaging, CLI release workflows, debugging, software delivery, agent skill/template maintenance.
+## When To Use
 
-## Step 1: Learn And Extract Principles
-
-Before designing or reviewing a non-trivial CLI, ground your judgment in these patterns:
-
-- Typer: prefer type-hint-driven command definitions, automatic help, shell completion, and gradual growth from one command to command trees.
-- uv: treat speed, cache behavior, installability, and cross-platform distribution as product features, not backend details.
-- Ruff: provide a cohesive command surface, fast defaults, file discovery rules, config-file support, and explicit CLI overrides.
-- Rich: standardize terminal rendering through one console layer; use tables, panels, progress, Markdown, and rich tracebacks intentionally.
-- HTTPie: optimize syntax and output for humans; make common actions short, natural, colorized, and inspectable.
-- Your own CLI experience: never hide model/provider/config failures behind empty results; make cache, profile memory, refresh semantics, delivery channels, and diagnostics observable.
-
-## Core Philosophy
-
-Build CLIs as durable products, not one-off scripts.
-
-1. Design from the user's job, not the implementation mode. A CLI should make the next action obvious.
-2. Keep command semantics stable. Names, flags, exit codes, config keys, and output modes are product contracts.
-3. Make defaults useful and safe. Zero-config should do something helpful, or fail with a concrete fix.
-4. Separate routing, domain logic, IO, config, persistence, rendering, and integrations.
-5. Optimize both humans and automation. Rich output is for people; JSON/plain output is for scripts.
-6. Treat performance as UX. Startup, help, cache hits, file discovery, and progress feedback matter.
-7. Make state explainable. Config, cache, credentials, profiles, history, and remote auth must be inspectable and resettable.
-8. Verify installability early. The command in README must be the command installed from PyPI, uv, pipx, Homebrew, or standalone binaries.
+- New Python CLI or command tree.
+- CLI refactor, simplification, or packaging cleanup.
+- CLI review/audit, including UX, config, errors, cache, and release flow.
+- Agent skill, scaffold, or template that behaves like a CLI package.
+- Verification of install, wheel, or console-script behavior.
 
 ## CLI Type Selection
 
-Classify the CLI before choosing architecture.
+| Type | Bias |
+|---|---|
+| Command-first utility | Thin router, strict exit codes, JSON/plain output. |
+| Configuration-driven tool | Config discovery, precedence, reproducibility. |
+| Interactive assistant | Flow/state machine, prompts, recovery. |
+| Hybrid CLI | Small command tree plus reusable orchestration. |
+| Performance-heavy CLI | Lazy imports, bounded IO, cache/progress. |
+| Plugin/extensible CLI | Stable extension contract and registry. |
 
-| CLI type | Examples | Primary design concern | Architecture bias |
-|---|---|---|---|
-| Command-first utility | `ruff check`, `uv pip install`, data query tools | Fast, scriptable, predictable | Thin CLI, service layer, strict exit codes, JSON option |
-| Configuration-driven tool | linters, formatters, deploy tools | Config precedence, discovery, reproducibility | Settings loader, config schema, project root detection |
-| Interactive assistant | setup wizards, research assistants, LLM tools | Natural flow, state, recovery | Flow/state machine, prompts, profile/cache memory |
-| Hybrid CLI | `run`, `setup`, `doctor`, `config`, `export` | Friendly first run plus automation | Commands wrap reusable orchestration services |
-| Performance-heavy CLI | scanners, batch processors, package tools | Startup, concurrency, cache, progress | Lazy imports, compiled hot paths when needed, bounded IO |
-| Plugin/extensible CLI | cloud tools, delivery-channel frameworks | Stable extension contracts | Adapter registry, entry points, versioned plugin API |
+Do not force an assistant architecture onto a command-first tool. Do not force a single-script shape onto a growing product.
 
-Do not force an interactive assistant architecture onto a command-first tool. Do not force a single-command script structure onto a growing product.
+## Core Rules
 
-## New CLI Creation Workflow
+- Prefer the smallest CLI that solves the user job.
+- Use the minimal CLI/YAGNI path: if the tool has one or two commands, no persistent state, no network, no plugins, and no credentials, keep it tiny; do not add Rich, Pydantic, platformdirs, cache layers, `doctor`, or plugin registries unless they solve an immediate problem.
+- Keep names, flags, exit codes, config keys, and output modes stable.
+- Make defaults useful and safe.
+- Separate routing, domain logic, IO, config, persistence, rendering, and integrations.
+- Keep machine output scriptable with JSON or plain mode.
+- Verify that the README command is the installed console script.
 
-### 1. Determine The Product Shape
+## Reference-Loading Rules
 
-Ask and answer:
+Read only the references needed for the task:
 
-- Who runs this CLI, and under what pressure?
-- Is the main value a command result, a generated file, a changed remote state, or a guided decision?
-- Does the user need zero-config use, project config, global config, or credentials?
-- Will it be used in terminals only, or also cron, CI, automations, and pipes?
-- What should be cached, remembered, logged, or deliberately forgotten?
+- Creation or refactor: `references/creation-playbook.md`.
+- Review or audit: `references/review-rubric.md` and `references/pitfalls-and-solutions.md`.
+- Implementation details, packaging, security, cross-platform behavior, Rich output, cache, or LLM providers: `references/technical-best-practices.md`.
+- For skill/package maintenance, consult workspace-root governance folders `skill-ir/`, `evals/`, `scripts/`, `reports/`, and `registry/` when they exist. These are maintainer-side routing aids, not bundled inside an installed skill copy.
 
-### 2. Design The Command Surface
+Do not duplicate those references here. Load them only when the current task needs them.
 
-Prefer a small stable command tree:
+## New CLI Or Skill Creation Flow
+
+1. Determine the product shape: who runs it, what pressure it is under, and what must be cached, remembered, or forgotten.
+2. Design the command surface with a few stable commands and real examples.
+3. Choose the smallest stack that fits.
+   - Typer or Click for most CLIs.
+   - argparse only for tiny stdlib-friendly tools.
+4. Pick the smallest architecture that will survive the next two releases.
+5. Implement the product loop: input, validation, execution, rendering, persistence, exit code, recovery hint.
+6. Verify before shipping.
+
+### Command Surface Examples
 
 ```text
-my-cli run                 # main workflow
-my-cli init                # create project config or scaffold
-my-cli config show         # inspect config safely
-my-cli config set          # update config
-my-cli doctor              # diagnose environment
-my-cli cache clear         # clear derived state
-my-cli completion          # shell completion, if not provided by framework
-```
-
-For command-first tools, prefer verbs that match user intent:
-
-```text
+my-cli run
+my-cli init
+my-cli config show
+my-cli doctor
+my-cli cache clear
 my-cli check PATH
-my-cli format PATH
 my-cli fetch QUERY --json
 my-cli export ID --output result.md
 ```
@@ -91,97 +81,35 @@ Rules:
 - Provide `--quiet`, `--verbose`, and `--debug` consistently.
 - Avoid surprising network or mutation in commands that sound read-only.
 
-### 3. Choose The Stack
+## Verification Expectations
 
-Use Typer when type hints, async-ish orchestration, and Rich integration matter. Use Click when you need mature low-level control, custom contexts, or an existing Click ecosystem. Use argparse only for minimal standard-library scripts or dependency-sensitive tools.
+Always verify the command surface, installation path, and wheel path when they matter:
 
-Default Python stack:
+- `--help` for the root command and each top-level command.
+- Clean install into a new environment.
+- Missing config or first-run path when the tool has config.
+- Invalid config or error path when the tool validates input.
+- Success path plus JSON/scriptable mode when supported.
+- Cache refresh and cache clear when the tool has cache.
+- Packaging metadata and console script.
+- Wheel install from outside the repository when you want install confidence.
 
-- Typer or Click for command routing.
-- Rich for terminal rendering and tracebacks.
-- Pydantic v2 for domain models and validation.
-- pydantic-settings for env/config loading.
-- tomllib/tomli-w or `tomlkit` for project config.
-- platformdirs for config/cache/data directories.
-- httpx for HTTP with timeouts and retries.
-- SQLite, diskcache, or sqlite-utils for durable local cache.
-- loguru or stdlib logging with a single configured logger.
-- pytest plus CliRunner or subprocess smoke tests.
-- ruff for lint/format; uv for build, sync, and release workflows when available.
-
-Add questionary only when prompts are core to the product. Add litellm/instructor only when LLM calls are genuinely needed.
-
-### Minimal CLI Exception
-
-Do not over-design tiny tools. If the CLI has one or two commands, no persistent state, no network, no plugins, no credentials, and no public support burden, prefer:
-
-- argparse or a very small Typer/Click app
-- direct functions with tests
-- README examples
-- clear exit codes
-- packaging only if users need installation
-
-Do not force Pydantic, Rich, platformdirs, cache layers, `doctor`, plugin registries, or config schemas onto an internal script unless they solve an immediate problem.
-
-### 4. Pick An Architecture Level
-
-Choose the smallest architecture that will survive the next two releases:
-
-- Single file: one or two commands, no config, no network, no long-term state.
-- Small package: 3-8 commands, config, HTTP, output renderers, tests.
-- Modular package: multiple workflows, cache, integrations, domain models, plugins.
-- Plugin platform: stable extension API, third-party integrations, versioned contracts.
-
-Never keep HTTP calls, prompt text, SQL, Rich tables, and Typer callbacks in the same module once the tool has real users.
-
-### 5. Implement The Product Loop
-
-For any workflow, make these explicit:
-
-- Input collection.
-- Validation.
-- Execution.
-- Rendering.
-- Persistence.
-- Exit code.
-- Recovery hint.
-
-For interactive flows, use a state object. For command-first flows, use request/result models.
-
-### 6. Verify Before Shipping
-
-Always verify:
-
-- `my-cli --help`
-- each top-level command `--help`
-- clean install into a new venv
-- missing config first run
-- invalid config
-- success path
-- JSON/scriptable mode
-- cache refresh and cache clear
-- packaging metadata and console script
-
-Use this verification command pack when applicable, replacing `my-cli` and sample commands with the real command surface:
+Use this compact pack when applicable:
 
 ```bash
 uv venv /tmp/cli-audit
 . /tmp/cli-audit/bin/activate
 uv pip install -e .
-my-cli --help
-my-cli --version
-my-cli SUBCOMMAND --help
-my-cli SAMPLE --json | python -m json.tool
+cli-creator-skill --help
+cli-creator-skill install
 uv build
 uv pip install dist/*.whl
 python -m pytest
 ```
 
-For wheel confidence, run the installed command from outside the repository directory.
-
 ## Review Workflow
 
-When auditing an existing CLI:
+When auditing an existing CLI or CLI-related skill/template:
 
 Before reviewing, read:
 
@@ -193,8 +121,8 @@ Read `references/technical-best-practices.md` when the audit touches implementat
 Then:
 
 1. Inspect repository shape: package layout, command entry points, config files, tests, docs, CI.
-2. Run help: `my-cli --help` and command-level help.
-3. Trace one successful command from CLI callback to domain service to renderer.
+2. Run help: root `--help` and command-level help.
+3. Trace one successful command from callback to domain service to renderer.
 4. Trace one failure path and inspect error quality.
 5. Check configuration precedence: flags, env, project config, user config, defaults.
 6. Check security: secrets, shell execution, path handling, unsafe config/plugins, telemetry, subprocess timeouts, dependency supply chain.
@@ -204,7 +132,9 @@ Then:
 10. Score every rubric area with `references/review-rubric.md`.
 11. Return findings first, then prioritized fixes.
 
-Audit output must include these sections:
+## Required Audit Output
+
+Audit output must include these sections, in this order:
 
 ```markdown
 **Findings**
@@ -221,119 +151,21 @@ Audit output must include these sections:
 **Verification Commands**
 ```
 
-### When Auditing A CLI-Related Skill Or Template
+## Maintenance Notes
 
-If the target is an agent skill, starter template, cookiecutter, scaffold, or reusable CLI project skeleton, audit it as a product contract, not only as code.
+- Keep this skill as a router; put implementation detail in the four references.
+- Keep the command examples, audit headings, and verification pack in sync with the package release.
+- For maintainer-side governance, use the workspace-root `skill-ir/`, `evals/`, `scripts/`, `reports/`, and `registry/` folders when present; do not pretend they are part of the installed skill.
 
-Check:
+## What This Skill Helps With
 
-- Trigger description: clear enough for the agent to load it at the right time.
-- Main workflow: concrete ordered steps, with required references named before action.
-- Reference files: complete, non-duplicative, discoverable from `SKILL.md`, and loaded only when needed.
-- Executable command templates: install, help, JSON, build, test, and release commands are present.
-- Output contract: review or creation outputs have fixed required sections.
-- Verification steps: real command pack exists and distinguishes source install from wheel install.
-- Maintenance strategy: versioning, changelog/release-copy sync, and drift checks are explicit.
+- Designing a new Python CLI from scratch.
+- Reviewing an existing CLI for UX, packaging, errors, model setup, caching, and maintainability.
+- Structuring Typer, Click, argparse, or hybrid applications.
+- Building natural multi-turn CLI flows without making users feel like they are filling out a form.
+- Adding diagnostics, cache, profile memory, and first-run setup flows when they are actually needed.
+- Reviewing CLI-related skills and templates for trigger clarity, reference completeness, command templates, output contracts, and maintenance strategy.
 
-## Common Pitfalls
+## Design Basis
 
-Read `references/pitfalls-and-solutions.md` when implementing or auditing. Watch especially for:
-
-- Command names that expose internals instead of user intent.
-- Prompt-only workflows with no flags or non-TTY fallback.
-- Config fields hidden behind a single "API key" setup.
-- Undefined precedence between flags, env, local config, and global config.
-- Slow `--help` caused by heavy imports or network probes.
-- Pretty Rich output with no JSON mode.
-- Cache failures stored as valid empty results.
-- README install commands that do not match `[project.scripts]`.
-- No `doctor` command for environment, auth, model, cache, and path issues.
-
-## Recommended Structure
-
-Use this as the default for a modern medium-sized CLI:
-
-```text
-my-cli/
-  pyproject.toml
-  README.md
-  CHANGELOG.md
-  .env.example
-  src/my_cli/
-    __init__.py
-    __main__.py
-    cli.py
-    console.py
-    errors.py
-    models.py
-    settings.py
-    config.py
-    paths.py
-    logging.py
-    app/
-      __init__.py
-      commands.py
-      workflows.py
-    services/
-      __init__.py
-      http.py
-      cache.py
-      domain.py
-    renderers/
-      __init__.py
-      terminal.py
-      json.py
-      markdown.py
-    integrations/
-      __init__.py
-      base.py
-    plugins/
-      __init__.py
-      registry.py
-  tests/
-    test_cli_help.py
-    test_config.py
-    test_errors.py
-    test_smoke.py
-```
-
-Read `references/creation-playbook.md` for scale-specific templates and implementation phases.
-
-## Technical Best Practices
-
-Read `references/technical-best-practices.md` when implementing:
-
-- Typer callbacks, command groups, context objects, parameter validation, and completions.
-- Config precedence with TOML, env vars, flags, and secrets.
-- Rich rendering rules for tables, progress, panels, Markdown, and tracebacks.
-- Cache, logs, error classes, exit codes, and JSON output.
-- Security, cross-platform terminal behavior, subprocess safety, and dependency supply chain.
-- Packaging with `pyproject.toml`, uv, wheels, and CI.
-
-## Output Expectations
-
-For a new CLI, deliver:
-
-- Product type decision.
-- Command tree.
-- Project structure.
-- Core models and config schema.
-- Main command implementation.
-- Tests and smoke checks.
-- README with real commands.
-
-For a review, deliver:
-
-- Findings ordered by severity.
-- File/line references.
-- Scores table using `references/review-rubric.md`.
-- Repair order.
-- Test gaps.
-- Verification commands actually run or recommended.
-
-## References
-
-- `references/pitfalls-and-solutions.md`
-- `references/creation-playbook.md`
-- `references/review-rubric.md`
-- `references/technical-best-practices.md`
+This skill distills maintainer experience and official documentation patterns for Python packaging, Typer, Click, Rich, uv, Ruff, Pydantic, and LLM provider integration. It does not vendor code or instructions from unofficial third-party repositories.

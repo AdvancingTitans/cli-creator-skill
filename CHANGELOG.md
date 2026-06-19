@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Slim `skills/cli-creator/SKILL.md` into a router while preserving the CLI type selection, minimal CLI/YAGNI rule, creation flow, review flow, and fixed audit headings.
+- Add lightweight Skill OS governance routing for `skill-ir/`, `evals/`, `scripts/`, `reports/`, and `registry/` when maintaining the package.
+- Clarify the one-command review gate, package verification path, and wheel/install confidence checks.
+- Keep the four reference documents as the source of implementation detail instead of duplicating them in `SKILL.md`.
+
 ## 0.1.3
 
 - Make CLI reviews executable with required reference loading, fixed output sections, scores, repair order, test gaps, and verification commands.

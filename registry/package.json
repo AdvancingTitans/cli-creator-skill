@@ -1,0 +1,40 @@
+{
+  "name": "cli-creator-skill",
+  "version": "0.1.3",
+  "owner": "yjw",
+  "maturity": "alpha",
+  "targets": [
+    "codex-skill-install",
+    "wheel-install"
+  ],
+  "review_cadence": "per-release",
+  "license": "MIT",
+  "checksum": {
+    "package_sha256": "generated-at-release"
+  },
+  "compatibility": {
+    "python": ">=3.9",
+    "skill_layout": "skills/cli-creator"
+  },
+  "trust_level": "maintainer-reviewed",
+  "permissions": {
+    "reads": [
+      "skills/cli-creator/**",
+      "pyproject.toml",
+      "README.md"
+    ],
+    "writes": [
+      "~/.codex/skills/cli-creator"
+    ]
+  },
+  "skill_name": "cli-creator",
+  "script_name": "cli-creator-skill",
+  "entry_point": "cli_creator_skill.installer:main",
+  "skill_path": "skills/cli-creator/SKILL.md",
+  "references": [
+    "skills/cli-creator/references/creation-playbook.md",
+    "skills/cli-creator/references/pitfalls-and-solutions.md",
+    "skills/cli-creator/references/review-rubric.md",
+    "skills/cli-creator/references/technical-best-practices.md"
+  ]
+}
