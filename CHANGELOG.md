@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.5
+
+- Fix editable/source installs so `cli-creator-skill install` can fall back to the repository skill directory when packaged skill files are not yet materialized under `src/`.
+- Add a regression test that locks the editable-install source-resolution path.
+
 ## 0.1.4
 
 - Slim `skills/cli-creator/SKILL.md` into a router while preserving the CLI type selection, minimal CLI/YAGNI rule, creation flow, review flow, and fixed audit headings.

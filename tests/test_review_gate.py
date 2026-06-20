@@ -91,6 +91,12 @@ class ReviewGateTests(unittest.TestCase):
             self.assertTrue((dest / "SKILL.md").exists())
             self.assertTrue((dest / "references" / "review-rubric.md").exists())
 
+    def test_skill_source_resolves_from_editable_layout(self):
+        from cli_creator_skill import installer
+
+        self.assertEqual(installer.skill_source(), ROOT / "skills" / "cli-creator")
+        self.assertTrue(installer.skill_source().exists())
+
     def test_wheel_inspection_detects_required_members(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             wheel_path = Path(tmp_dir) / "fixture.whl"

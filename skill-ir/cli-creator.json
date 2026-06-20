@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "name": "cli-creator",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "job_to_be_done": "Help an agent design, scaffold, refactor, package, or audit Python CLI tools and CLI-related skills with concrete workflows, packaging checks, and review-ready output contracts.",
   "skill_path": "skills/cli-creator/SKILL.md",
   "required_output_sections": [

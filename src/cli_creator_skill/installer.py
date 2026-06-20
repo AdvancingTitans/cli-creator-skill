@@ -14,7 +14,16 @@ def default_target() -> Path:
 
 
 def skill_source() -> Path:
-    return Path(__file__).resolve().parent / "skills" / SKILL_NAME
+    package_skill = Path(__file__).resolve().parent / "skills" / SKILL_NAME
+    if package_skill.exists():
+        return package_skill
+
+    # ponytail: editable installs point at src/, so fall back to the repository copy.
+    repo_skill = Path(__file__).resolve().parents[2] / "skills" / SKILL_NAME
+    if repo_skill.exists():
+        return repo_skill
+
+    return package_skill
 
 
 def install(target: Path, force: bool = False) -> Path:

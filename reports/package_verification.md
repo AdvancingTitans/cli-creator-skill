@@ -4,9 +4,9 @@
 
 - [PASS] `registry:required-fields` — registry metadata complete
   - Evidence: registry/package.json
-- [PASS] `registry:version-parity` — registry version=0.1.4 pyproject version=0.1.4
+- [PASS] `registry:version-parity` — registry version=0.1.5 pyproject version=0.1.5
   - Evidence: registry/package.json, pyproject.toml
-- [PASS] `registry:package-version-parity` — package __version__=0.1.4 pyproject version=0.1.4
+- [PASS] `registry:package-version-parity` — package __version__=0.1.5 pyproject version=0.1.5
   - Evidence: src/cli_creator_skill/__init__.py, pyproject.toml
 - [PASS] `registry:license-parity` — registry license=MIT pyproject license=MIT
   - Evidence: registry/package.json, pyproject.toml
@@ -19,10 +19,10 @@
 - [PASS] `pyproject:force-include` — wheel force-include covers skills/cli-creator
   - Evidence: pyproject.toml
 - [PASS] `wheel:required-members` — wheel contains skill files and references
-  - Evidence: cli_creator_skill-0.1.4-py3-none-any.whl
+  - Evidence: dist/cli_creator_skill-0.1.5-py3-none-any.whl
 - [PASS] `wheel:metadata-name` — wheel name=cli-creator-skill pyproject name=cli-creator-skill
-  - Evidence: cli_creator_skill-0.1.4-py3-none-any.whl
-- [PASS] `wheel:metadata-version` — wheel version=0.1.4 pyproject version=0.1.4 registry version=0.1.4
-  - Evidence: cli_creator_skill-0.1.4-py3-none-any.whl
-- [PASS] `wheel:sha256` — sha256=6007bb5d6c0ac66882596b7ad8d01362155e1b7ac1d4d8d025d46886965cb618
-  - Evidence: cli_creator_skill-0.1.4-py3-none-any.whl
+  - Evidence: dist/cli_creator_skill-0.1.5-py3-none-any.whl
+- [PASS] `wheel:metadata-version` — wheel version=0.1.5 pyproject version=0.1.5 registry version=0.1.5
+  - Evidence: dist/cli_creator_skill-0.1.5-py3-none-any.whl
+- [PASS] `wheel:sha256` — sha256=c1e84ae877a1f5ffa08c41fc5d764b2b24d098c6df1ed23d7f591166521f8f02
+  - Evidence: dist/cli_creator_skill-0.1.5-py3-none-any.whl
