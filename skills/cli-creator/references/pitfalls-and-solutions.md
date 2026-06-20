@@ -478,3 +478,54 @@ Solution:
 - Add structured-output fallback or fail with a concrete repair hint.
 - Log retry/backoff and rate-limit handling without leaking prompts or tokens.
 - Export an evidence bundle with sources, prompt/version metadata, validation errors, and model details when the workflow produces claims.
+
+## 28. Interactive Assistant Drifted Away From The Real Command Surface
+
+Problem: A chat or slash-command layer recommends commands that the actual parser does not own.
+
+Typical signs:
+
+- The assistant invents `/market`, `/trend`, or similar commands.
+- Help text, prompt examples, aliases, and parser behavior disagree.
+- Deprecated commands still appear in one layer after they were removed in another.
+
+Solution:
+
+- Keep one authoritative command registry and reuse it for parser routing, help text, assistant prompts, and tests.
+- Treat aliases as compatibility shims with explicit deprecation messaging, not as parallel product surfaces.
+- Reject unknown commands with a safe repair hint such as "use /help" instead of trying to guess intent.
+- Add regression tests for likely natural-language prompts so the assistant recommends real commands only.
+
+## 29. Generated Artifact Identity Is Inconsistent Across Generate, Export, And Send
+
+Problem: The CLI can generate a report, export a PDF, and send an attachment, but each step discovers files differently.
+
+Typical signs:
+
+- Export reuses an old `replay.md` or stale `report.pdf`.
+- Titles, filenames, and dates disagree.
+- Historical reports get renamed as if they were generated in the current session.
+
+Solution:
+
+- Define one artifact identity contract: date, session/window, topic, and extension.
+- Centralize artifact selection and discovery in one module instead of duplicating path logic in commands.
+- Distinguish current-session generation from historical export rules.
+- Add end-to-end tests that cover generate -> export -> send, not just each command in isolation.
+
+## 30. Public Reports Leak Internal Evidence Or Template Jargon
+
+Problem: User-facing reports contain internal state markers, prompt preambles, or template/debug wording.
+
+Typical signs:
+
+- Output includes phrases like `modules.M2.available = false`.
+- PDF still shows template footer text after Markdown cleanup.
+- The report mixes internal evidence schema with public prose.
+
+Solution:
+
+- Keep internal evidence/debug data separate from public renderers.
+- Sanitize at every public boundary that can reintroduce text: Markdown, HTML, and PDF/template layers.
+- Maintain a small allowlist for public source/date/disclaimer wording instead of passing through raw internal labels.
+- Verify rendered artifacts directly; do not assume Markdown cleanup guarantees clean PDFs.

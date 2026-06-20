@@ -24,6 +24,7 @@ Check:
 - Is help concise and example-driven?
 - Are mutating commands obvious?
 - Are global flags consistent?
+- For interactive assistants, do prompt examples, slash commands, help text, and parser behavior come from the same command registry?
 
 Red flags:
 
@@ -87,6 +88,8 @@ Check:
 - Is JSON/plain output available for automation?
 - Are colors disabled when needed?
 - Are progress indicators honest?
+- When the CLI generates files, do generate/export/send share the same artifact naming and discovery rules?
+- Are public reports free of internal schema/debug/template jargon in the final rendered artifact, not just in source Markdown?
 
 Red flags:
 

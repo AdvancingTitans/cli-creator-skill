@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.6
+
+- Add audit guidance for hybrid CLI/chat products so assistant prompts, slash commands, help text, and parser behavior stay on one authoritative command registry.
+- Add artifact-identity guidance for report workflows so generate/export/send share the same naming and discovery contract.
+- Add public-report cleanup guidance so internal evidence markers and template jargon are stripped at Markdown, HTML, and PDF render boundaries.
+
 ## 0.1.5
 
 - Fix editable/source installs so `cli-creator-skill install` can fall back to the repository skill directory when packaged skill files are not yet materialized under `src/`.
