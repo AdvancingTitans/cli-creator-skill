@@ -107,6 +107,7 @@ Define models early:
 - `CacheEntry`: key, status, payload, created_at, expires_at.
 - `EvidenceItem`: source-backed data for data/LLM CLIs.
 - `ProviderConfig`: provider/base URL/model/credential reference.
+- `CommandDescriptor`: name, aliases, description, source, visibility, enabled predicate, execution kind, non-interactive support, permission requirements, and lazy loader for assistant/plugin CLIs.
 
 Boundaries:
 
@@ -116,6 +117,16 @@ Boundaries:
 - `renderers/`: terminal/JSON/Markdown.
 - `config.py`: config discovery and precedence.
 - `errors.py`: domain exceptions and exit mapping.
+
+For assistant, slash-command, plugin, or remote-capable CLIs, make the command registry authoritative. Parser routing, help text, prompt examples, slash-command suggestions, plugin commands, and tests should derive from the same descriptors. Split execution kinds explicitly:
+
+- prompt expansion or model instruction
+- local text command
+- interactive/TUI command
+- remote-safe command
+- headless-safe command
+
+Do not let a TUI-only command leak into `--json`, `--print`, CI, or remote mode unless it has a real non-interactive implementation.
 
 ## Phase 4: Configuration
 

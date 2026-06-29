@@ -60,6 +60,17 @@ Avoid:
 - Mutating commands that sound read-only.
 - Top-level commands that all do nearly the same thing.
 
+For assistant and plugin CLIs, centralize command metadata instead of duplicating parser commands, slash commands, prompt suggestions, and docs. A descriptor should name the command, aliases, help text, source, visibility, feature gates, execution kind, machine-mode support, and permission needs. Use the descriptor to generate help, autocomplete, model-facing command lists, and tests.
+
+Separate execution kinds:
+
+- Pure command: returns text/JSON and is safe for scripts.
+- Interactive command: renders prompts or TUI and is hidden from headless mode.
+- Prompt command: expands into model instructions and declares allowed tools.
+- Remote-safe command: has no local filesystem, shell, IDE, or TUI side effects.
+
+Unknown or disabled commands should fail with a repair hint, not best-effort intent guessing.
+
 ## Configuration Precedence
 
 Define and document precedence. Recommended:
@@ -187,6 +198,7 @@ Patterns:
 
 - Lazy import heavy libraries.
 - Avoid network calls during import or help.
+- Skip subcommand registration or plugin discovery on fast paths when the parsed mode cannot dispatch them.
 - Use timeouts for all HTTP calls.
 - Stream large files.
 - Use concurrency only behind a clear service layer.
@@ -207,6 +219,15 @@ Rules:
 - Mask tokens in logs, config display, tracebacks, remote URLs, and support bundles.
 - Keep telemetry opt-in or clearly disclosed with a working opt-out.
 - Run dependency/supply-chain checks appropriate to the project before release.
+
+For CLIs that can run tools, edit files, load plugins, or send remote mutations, define an explicit permission engine instead of scattering prompts through commands:
+
+- Normalize paths before matching rules; handle symlinks, case-insensitive filesystems, `~`, glob patterns, and shell expansion syntax deliberately.
+- Check deny rules before allow rules.
+- Treat read, write, create, delete, shell, network, plugin install, and credential access as separate operation classes.
+- Keep default diagnostics read-only; put repair behind explicit flags.
+- Avoid broad "always allow" suggestions. Scope permission suggestions to the smallest command, path, plugin, or session that solves the task.
+- Fail closed when a permission hook, classifier, plugin, or remote approval channel is unavailable.
 
 ## Cross-Platform Behavior
 

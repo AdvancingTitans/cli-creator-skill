@@ -496,6 +496,8 @@ Solution:
 - Reject unknown commands with a safe repair hint such as "use /help" instead of trying to guess intent.
 - Add regression tests for likely natural-language prompts so the assistant recommends real commands only.
 
+Extra check: classify every command by execution kind (`prompt`, `local`, `interactive`, `remote-safe`, `headless-safe`). Use that classification to filter commands in TTY, `--json`, `--print`, CI, remote, and plugin contexts.
+
 ## 29. Generated Artifact Identity Is Inconsistent Across Generate, Export, And Send
 
 Problem: The CLI can generate a report, export a PDF, and send an attachment, but each step discovers files differently.

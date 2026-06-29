@@ -25,6 +25,7 @@ Check:
 - Are mutating commands obvious?
 - Are global flags consistent?
 - For interactive assistants, do prompt examples, slash commands, help text, and parser behavior come from the same command registry?
+- For assistant/plugin CLIs, does one command descriptor define name, aliases, visibility, enabled state, source, execution kind, non-interactive support, and permission needs?
 
 Red flags:
 
@@ -74,6 +75,8 @@ Check:
 - Are services, renderers, settings, and domain logic separated?
 - Are models typed?
 - Are integrations behind adapters?
+- Are interactive/TUI commands separated from prompt/text/headless commands?
+- Are plugin or skill commands loaded through the same contract as built-ins while preserving their source and trust boundary?
 
 Red flags:
 
@@ -119,6 +122,7 @@ Check:
 
 - Is `--help` fast?
 - Are heavy imports lazy?
+- Does the CLI avoid loading plugins, SDKs, TUI renderers, or expensive subcommand trees on modes that cannot use them?
 - Are network calls timed out?
 - Are large inputs streamed or chunked?
 - Is cache useful and explainable?
@@ -160,6 +164,7 @@ Check:
 - Is release-copy sync verified when publishing bundled skills, templates, or generated resources?
 - Is the installed wheel smoke-tested from outside the repository?
 - Are dependencies pinned or bounded thoughtfully enough to reduce supply-chain breakage?
+- Are plugin installs, runtime downloads, remote bridges, and generated artifact sends gated by explicit user consent and diagnostics?
 
 Red flags:
 

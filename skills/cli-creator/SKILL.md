@@ -25,6 +25,7 @@ Router for building and auditing production-grade Python CLI tools and CLI-relat
 | Hybrid CLI | Small command tree plus reusable orchestration. |
 | Performance-heavy CLI | Lazy imports, bounded IO, cache/progress. |
 | Plugin/extensible CLI | Stable extension contract and registry. |
+| Agent/assistant CLI | One command registry feeding parser, slash commands, help, prompts, headless mode, and permissions. |
 
 Do not force an assistant architecture onto a command-first tool. Do not force a single-script shape onto a growing product.
 
@@ -37,6 +38,10 @@ Do not force an assistant architecture onto a command-first tool. Do not force a
 - Separate routing, domain logic, IO, config, persistence, rendering, and integrations.
 - Keep machine output scriptable with JSON or plain mode.
 - Verify that the README command is the installed console script.
+- For assistant, slash-command, or plugin CLIs, keep one command descriptor contract. Include name, aliases, description, visibility, enabled state, source, execution kind, non-interactive support, permission requirements, and lazy loader.
+- Treat interactive and headless modes as separate product paths with shared command contracts. A command that renders a TUI picker should not silently appear in `--print`, CI, or remote/bridge mode unless it has a non-interactive implementation.
+- Put dangerous capabilities behind a reviewable permission model: filesystem writes, shell execution, plugin loading, credential access, remote mutation, and generated artifact sends should have clear allow/deny/ask rules and safe failure behavior.
+- Keep `--help` and machine modes import-light. Lazy-load heavy UI, analytics, provider SDKs, plugin registries, and report renderers inside the command body.
 
 ## Reference-Loading Rules
 
